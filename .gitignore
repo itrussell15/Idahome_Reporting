@@ -1,3 +1,6 @@
 *.xlsx#
 Data/
 Idahome Data Draft.xlsx
+output/
+assets/
+!assets/logo.png
