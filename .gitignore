@@ -4,3 +4,5 @@ Idahome Data Draft.xlsx
 output/
 assets/
 !assets/logo.png
+.DS_Store
+__pycache__/
