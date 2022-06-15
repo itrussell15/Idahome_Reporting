@@ -49,6 +49,7 @@ class DataHandler:
             else:
                 self.leads = raw_data
             
+            # Can drop all the duplicates
             # self.duplicated = self.leads[self.leads.duplicated("Customer")]
             # self.leads = self.leads.drop_duplicates(subset = "Customer", keep = "first").copy()
     
@@ -66,7 +67,6 @@ class DataHandler:
             self.pullThroughRatio = 100 * (self.numSigns/(self.numSigns + self._getGroupedTotal("Signed- Canceled", self._status)))
             
             self.finalTable = self._finalTable()
-            
             
         def _finalTable(self):
             
@@ -90,9 +90,9 @@ class DataHandler:
                 output.append({"Source": i, "Leads": len(source_leads), "Signs": len(signed_leads), "Pitched": len(pitched_leads)})
                 
             df = pd.DataFrame.from_records(output).set_index("Source")
-            df["Pitched_Percent"] = 100*(df["Pitched"]/df["Leads"])
-            df["Pitch_Conversion"] = 100*(df["Signs"]/df["Pitched"])
-            df["Lead_Conversion"] = 100*(df["Signs"]/df["Leads"])
+            df["Pitched %"] = 100*(df["Pitched"]/df["Leads"])
+            df["Pitch Conv"] = 100*(df["Signs"]/df["Pitched"])
+            df["Lead Conv"] = 100*(df["Signs"]/df["Leads"])
             df.fillna(0, inplace = True)
             
             return df

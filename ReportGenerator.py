@@ -69,7 +69,7 @@ class Report(FPDF):
 
     def create_body(self, subject):
         
-        def create_table(self, data, title, cell_size, title_size = 15, cell_sizes = 7):
+        def create_table(self, data, title, cell_size, title_size = 15, cell_sizes = 9):
             self.set_font(self._font, 'B', 15)
             self.cell(0, h = 10, txt = title, align = 'C')
             self.ln(10)
@@ -93,7 +93,6 @@ class Report(FPDF):
                     self.y = self.t_margin + 35
                     self.x = to_center
                     # break
-                    
                 # Cells in row
                 for o, value in enumerate(row):
                     top = self.y 
@@ -114,13 +113,19 @@ class Report(FPDF):
         headers.extend(list(subject.finalTable.columns))
         # print(subject.finalTable)
         temp = subject.finalTable.copy()
-        for i in ["Pitched_Percent", "Pitch_Conversion", "Lead_Conversion"]:
+        # print(temp)
+        for i in ["Pitched %", "Pitch Conv", "Lead Conv"]:
             temp[i] = temp[i].apply(lambda x: "{:.2f}".format(x))
+        for i in ["Leads", "Signs", "Pitched"]:
+            temp[i] = temp[i].apply(lambda x: "{}".format(x))
+        # bulk.reset_index(inplace = True)
         temp.reset_index(inplace = True)
-        bulk = [["{}".format(j) for j in i[1].values] for i in temp.iterrows()]
-        bulk.insert(0, headers)
+        bulk = pd.DataFrame(np.vstack([temp.columns, temp]))
+        # print(bulk.values)
+        # bulk = [["{}".format(j) for j in i[1].values] for i in temp.iterrows()]
+        # bulk.insert(0, headers)
         
-        create_table(self, bulk, "Sources", (27, 6))
+        create_table(self, bulk.values, "Sources", (27, 6))
         
         self.ln(10)
         pull_values = ["Customer", "Lead Source", "Lead Status"]
