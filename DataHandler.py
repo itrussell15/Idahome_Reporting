@@ -65,10 +65,10 @@ class DataHandler:
             self.pitchRatio = 100 * (self.numSits/self.numLeads)
             self.pullThroughRatio = 100 * (self.numSigns/(self.numSigns + self._getGroupedTotal("Signed- Canceled", self._status)))
             
-            self.finalTable = self.finalTable()
+            self.finalTable = self._finalTable()
             
             
-        def finalTable(self):
+        def _finalTable(self):
             
             def getPitchedLeads(source_leads):
                 everything = pd.DataFrame()
@@ -179,22 +179,6 @@ class DataHandler:
 
         def __init__(self, closer_name, data):
             super().__init__(closer_name, data)
-
-
-    class _OfficeData(_ReportableData):
-
-        def __init__(self, officeName, data):
-            super().__init__(officeName, data)
-            self.closers = self.allClosers()
-
-        def byCloser(self):
-            return super()._groupedOutput("Lead Owner")
-
-        def allClosers(self):
-            return self.leads["Lead Owner"].unique()
-
-        def graphCloser(self, percentages = False, color = "orange", save_image = False):
-            self._graphByGrouped("Lead Owner", percentages, color, save_image)
 
     class _AllData(_ReportableData):
 

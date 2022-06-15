@@ -8,23 +8,30 @@ Created on Sat Jun 11 00:07:17 2022
 from fpdf import FPDF
 from DataHandler import DataHandler
 import datetime, os
+import numpy as np
+import pandas as pd
 
 class Report(FPDF):
     
-    def __init__(self, type_, title, handler, data_path, fig_path = "/assets/temp"):
+    def __init__(self, title, handler, data_path, fig_path = "/assets/temp"):
         super().__init__()
+        if not data_path and not handler:
+            raise ValueError("Either data_path or handler should be passed in")
         self.WIDTH = 210
         self.HEIGHT = 297
         self._title = title
         self._font = "Courier"
-        self._type = type_
         self._fig_path = fig_path 
+        self._epw = self.w - self.l_margin
+        
         
         if handler:
             self._data = handler
         else:
             self._data = DataHandler(data_path)
         self._cleanFigureFolder(fig_path)
+        
+        self.add_page()
         
     def header(self):
         self.image("assets/logo.png", 10, 8, 33)
@@ -34,75 +41,109 @@ class Report(FPDF):
         # Move to the right
         self.cell(80)
         # Title
-        self.cell(60, 10, "{} Report".format(self._type), align = "C")
+        self.cell(60, 10, "{} Report".format(self._title), align = "C")
         self.ln(11)
         self.set_font(self._font, 'B', 15)
-        self.cell(10+80+130, 10, self._title, align = "C")
+        self.cell(220, 10, "{} - {}".format(
+            (datetime.datetime.today() - datetime.timedelta(weeks = 6)).strftime("%m/%d/%Y"), datetime.date.today().strftime("%m/%d/%Y")), align = "C")
         # Line break
-        self.ln(12)
+        self.ln(18)
         
     def footer(self):
         thisTime = datetime.datetime.now()
         self.set_font(self._font, "I", 10)
         self.set_y(-10)
         self.cell(0,10, "Report Generated at {}".format(thisTime.strftime("%m/%d/%Y, %H:%M:%S")), align = "C")
+        self.set_x(-self.l_margin-5)
+        self.cell(10, h = 8, txt = "Page {}".format(self.page_no()), align = "R")
         
     def output(self):
-        thisTime = datetime.datetime.now()       
-        super().output("output/{}_{}_Report_{}.pdf".format(self._title, self._type, thisTime.strftime("%m-%d-%Y"), "F"))
+        thisTime = datetime.datetime.now()     
+        self.out_path = "output/{}_Report_{}.pdf".format(self._title, thisTime.strftime("%m-%d-%Y"))
+        super().output(self.out_path, "F")
         
     def _cleanFigureFolder(self, path):
         path = os.getcwd() + path
         for file in os.listdir(path):
             os.remove(path + "/" + file)
+
+    def create_body(self, subject):
+        
+        def create_table(self, data, title, cell_size, title_size = 15, cell_sizes = 7):
+            self.set_font(self._font, 'B', 15)
+            self.cell(0, h = 10, txt = title, align = 'C')
+            self.ln(10)
             
-    # def GenerateGraphs(self, graphFunctions):
-    #     for img in graphFunctions.values():
-    #         img(percentages = True, color = "orange", save_image = True, path = self._fig_path)
+            columns = len(data[0])
+            to_center = round((self.WIDTH  - (columns * cell_size[0]))/2)
+            self.x = to_center
+            
+            for n, row in enumerate(data):
+                
+                # self.y = cell_size[1] * n
+                self.x = to_center
+                if n == 0:
+                    self.set_font(self._font, 'B', size = cell_sizes)
+                    self.y = self.y + (cell_size[1] * n)
+                else:
+                    self.set_font(self._font, size = cell_sizes)
+                    self.y += cell_size[1]
+                if self.y > self.HEIGHT - self.b_margin - self.t_margin:
+                    self.add_page()
+                    self.y = self.t_margin + 35
+                    self.x = to_center
+                    # break
+                    
+                # Cells in row
+                for o, value in enumerate(row):
+                    top = self.y 
+                    # if 
+                    self.multi_cell(cell_size[0], cell_size[1], value, border =  1, align = "C")
+                    self.x = ((o + 1) * cell_size[0]) + to_center
+                    self.y = top
+            
+        data = [["Pitched-Lead", "Signed-Pitched", "Pull Through"],
+                ["{:.2f} %".format(subject.pitchRatio), "{:.2f} %".format(subject.closeRatio), "{:.2f} %".format(subject.pullThroughRatio)]]
+        cell_size = (40, 6)
+        create_table(self, data, "KPIs", cell_size)
+        
+        self.ln(12)
+        
+        data = []
+        headers = ["Source"]
+        headers.extend(list(subject.finalTable.columns))
+        # print(subject.finalTable)
+        temp = subject.finalTable.copy()
+        for i in ["Pitched_Percent", "Pitch_Conversion", "Lead_Conversion"]:
+            temp[i] = temp[i].apply(lambda x: "{:.2f}".format(x))
+        temp.reset_index(inplace = True)
+        bulk = [["{}".format(j) for j in i[1].values] for i in temp.iterrows()]
+        bulk.insert(0, headers)
+        
+        create_table(self, bulk, "Sources", (27, 6))
+        
+        self.ln(10)
+        pull_values = ["Customer", "Lead Source", "Lead Status"]
+        customers = subject.leads[pull_values].fillna("Null")
+        customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
+        create_table(self, customers, "Customers", (55, 5))
         
 class CloserReport(Report):
     
     def __init__(self, closer_name, handler = None, path = None):
-        super().__init__("Closer", closer_name, handler, path)
-        self.add_page()
+        super().__init__(closer_name, handler, path)
         closer = self._data.getCloserData(closer_name)
-        self.create_body(closer.numSigns,
-                         closer.numLeads,
-                         closer.closeRatio,
-                         {"Dispositions": closer.graphDisposition, "Lead Generation": closer.graphGeneration})
-        self.output()
-        
-    def create_body(self, signs, leads, ratio, graphFunctions):
-        self.set_font(self._font, 'B', 12)        
-        self.cell(0, 15, "{} Signs | {} Leads | {:.2f}% Conversion".format(signs, leads, ratio), align = "C")
-        y_i = 75
-        steps = 110
-        self.ln(20)
-        self.set_font(self._font, 'B', 15)
-        for i in graphFunctions.items():
-            
-            i[1](i[0], percentages = True, color = "orange", save_image = True, path = self._fig_path )
-            # print(os.getcwd() + self._fig_path + "/{}.png".format(i[0]))
-            self.image(os.getcwd() + self._fig_path + "/{}.png".format(i[0]),
-                        7,
-                        y_i, 
-                        self.WIDTH)
-            self.cell(0, 12, i[0], align = "C")
-            y_i += steps - 5
-            self.ln(steps)        
+        self.create_body(closer)    
         
 class OfficeReport(Report):
     
-    def __init__(self, office, handler = None, path = None):
-        super().__init__("Office", office, handler, path)
-        
-class AllReport(Report):
-    
-        def __init__(self, path):
-            super().__init__("All", "", path)
+        def __init__(self, path = None, handler = None):
+            super().__init__("Office", handler = handler, data_path = path)
+            office = self._data.getAllData()
+            self.create_body(office)
 
 if __name__ == "__main__":
     path = os.getcwd() + "/Data/Data.xlsx"
-    # report = CloserReport("Josh Hodges", path = path)
-    report = OfficeReport("Idahome Electric", handler = None, path = path)
-    # report.output()
+    # report = OfficeReport(path = path)
+    report = CloserReport("Zach Trussell", path = path)
+    report.output()
