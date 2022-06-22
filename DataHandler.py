@@ -44,7 +44,7 @@ class DataHandler:
             self.name = name
             
             if previous_weeks:
-                today = datetime.datetime(2022, 6, 13)
+                today = datetime.datetime.today()
                 self.leads = raw_data[raw_data["Added"] >= today - datetime.timedelta(weeks = previous_weeks)]
             else:
                 self.leads = raw_data
@@ -68,25 +68,16 @@ class DataHandler:
             
             self.finalTable = self._finalTable()
             
+        # Shows the conversion efficiency of various lead methods
         def _finalTable(self):
             
-            def getPitchedLeads(source_leads):
-                everything = pd.DataFrame()
-                for i in ["Signed", "Singed- Canceled", "Pitched"]:
-                    try:
-                        to_add = source_leads[source_leads["Lead Status"] == i]
-                        everything = pd.concat([everything, to_add])
-                    except AttributeError:
-                        print("No Attribute {}".format(i))
-                return everything
-
             sources = list(self._source.index)
             output = []
             for i in sources:
                 
                 source_leads = self.leads[self.leads["Lead Source"] == i]
                 signed_leads = source_leads[source_leads["Lead Status"] == "Signed"]
-                pitched_leads = getPitchedLeads(source_leads)
+                pitched_leads = self._getPitchedLeads(source_leads)
                 output.append({"Source": i, "Leads": len(source_leads), "Signs": len(signed_leads), "Pitched": len(pitched_leads)})
                 
             df = pd.DataFrame.from_records(output).set_index("Source")
@@ -102,6 +93,7 @@ class DataHandler:
             output.rename(self.name, inplace = True)
             return output
         
+        # Requires a grouping as an input to be to return a total
         @staticmethod
         def _getGroupedTotal(value, group):
             try:
@@ -110,6 +102,46 @@ class DataHandler:
                 print("{} not found in grouping")
                 return 0
 
+        
+
+        # Only returns a number of pitched leads. See _getPitchedLeads for the DF with customer information
+        def _getPitched(self):
+            return self.numSigns + self._getGroupedTotal("Pitched", self._status) + self._getGroupedTotal("Signed- Canceled", self._status)
+
+        # Gets all sits, which includes multiple disposition categories
+        def _getPitchedLeads(self, source_leads):
+            everything = pd.DataFrame()
+            for i in ["Signed", "Singed- Canceled", "Pitched"]:
+                try:
+                    to_add = source_leads[source_leads["Lead Status"] == i]
+                    everything = pd.concat([everything, to_add])
+                except AttributeError:
+                    print("No Attribute {}".format(i))
+            return everything
+
+        def byGeneration(self):
+            return self._groupedOutput("Lead Source")
+
+        def graphGeneration(self,
+                            title = None,
+                            percentages = False,
+                            color = "orange",
+                            save_image = False,
+                            path = "/assets/temp",):
+            self._graphByGrouped("Lead Source", title, percentages, color, save_image)
+
+        def byDisposition(self):
+            return self._groupedOutput("Lead Status")
+
+        def graphDisposition(self,
+                             title = None,
+                             percentages = False,
+                             color = "orange",
+                             save_image = False,
+                             path = "/assets/temp",):
+            self._graphByGrouped("Lead Status", title, percentages, color, save_image)
+            
+            
         def _graphByGrouped(self, column,
                             title,
                             percentages = False,
@@ -150,31 +182,6 @@ class DataHandler:
                 plt.savefig(path, dpi = 100)
                 plt.close()
 
-        def _getPitched(self):
-            return self.numSigns + self._getGroupedTotal("Pitched", self._status) + self._getGroupedTotal("Signed- Canceled", self._status)
-
-        def byGeneration(self):
-            return self._groupedOutput("Lead Source")
-
-        def graphGeneration(self,
-                            title = None,
-                            percentages = False,
-                            color = "orange",
-                            save_image = False,
-                            path = "/assets/temp",):
-            self._graphByGrouped("Lead Source", title, percentages, color, save_image)
-
-        def byDisposition(self):
-            return self._groupedOutput("Lead Status")
-
-        def graphDisposition(self,
-                             title = None,
-                             percentages = False,
-                             color = "orange",
-                             save_image = False,
-                             path = "/assets/temp",):
-            self._graphByGrouped("Lead Status", title, percentages, color, save_image)
-
     class _CloserData(_ReportableData):
 
         def __init__(self, closer_name, data):
@@ -184,7 +191,11 @@ class DataHandler:
 
         def __init__(self, data):
             super().__init__("All", data)
+            
+            
 
 if __name__ == "__main__":
     data = DataHandler(os.getcwd() + "/Data/Data.xlsx")
     office = data.getAllData()
+    print(office.finalTable)
+    office.graphGeneration("Hello", True)
