@@ -141,7 +141,6 @@ class DataHandler:
                              path = "/assets/temp",):
             self._graphByGrouped("Lead Status", title, percentages, color, save_image)
             
-            
         def _graphByGrouped(self, column,
                             title,
                             percentages = False,
@@ -192,10 +191,19 @@ class DataHandler:
         def __init__(self, data):
             super().__init__("All", data)
             
-            
+        def closerLeadCounts(self):
+            everything = pd.DataFrame()
+            for closer in self.leads["Lead Owner"].unique():
+                closerData = self.leads[self.leads["Lead Owner"] == closer].groupby("Lead Source")["ID"].count()
+                closerData.name = closer
+                everything = pd.concat([everything, closerData], axis = 1)
+                
+            everything = everything.transpose()
+            everything.fillna(0.0, inplace = True)
+            everything.drop("No Owner", inplace = True)
+            return everything
 
 if __name__ == "__main__":
     data = DataHandler(os.getcwd() + "/Data/Data.xlsx")
     office = data.getAllData()
-    print(office.finalTable)
-    office.graphGeneration("Hello", True)
+    office.closerLeadCounts()
