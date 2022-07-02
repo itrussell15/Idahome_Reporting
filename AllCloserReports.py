@@ -9,8 +9,9 @@ from ReportGenerator import CloserReport
 from DataHandler import DataHandler
 
 data = DataHandler("Data/Data.xlsx")
-office = data.getOfficeData("Idahome Electric")
-closers = office.allClosers()
+office = data.getOfficeData()
+
+closers = office.leads["Lead Owner"].unique()
 
 for i in closers:
     try:

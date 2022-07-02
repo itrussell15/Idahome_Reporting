@@ -114,7 +114,7 @@ class Report(FPDF):
         # print(subject.finalTable)
         temp = subject.finalTable.copy()
         # print(temp)
-        for i in ["Pitched %", "Pitch Conv", "Lead Conv"]:
+        for i in ["Pitched %", "Pitch-Signed", "Lead-Signed"]:
             temp[i] = temp[i].apply(lambda x: "{:.2f}".format(x))
         for i in ["Leads", "Signs", "Pitched"]:
             temp[i] = temp[i].apply(lambda x: "{}".format(x))

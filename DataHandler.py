@@ -27,15 +27,15 @@ class DataHandler:
         else:
             raise KeyError("{} has no leads in this data".format(name))
 
-    def getOfficeData(self, name):
-        if name in self.df["Office"].unique():
-            officeData = self.df.loc[self.df["Office"] == name].copy()
-            officeData.drop("Office", axis = 1, inplace = True)
-            return self._OfficeData(name, officeData)
-        else:
-            raise KeyError('{} has no leads in this data'.format(name))
+    # def getOfficeData(self, name):
+    #     if name in self.df["Office"].unique():
+    #         officeData = self.df.loc[self.df["Office"] == name].copy()
+    #         officeData.drop("Office", axis = 1, inplace = True)
+    #         return self._OfficeData(name, officeData)
+    #     else:
+    #         raise KeyError('{} has no leads in this data'.format(name))
 
-    def getAllData(self):
+    def getOfficeData(self):
         return self._AllData(self.df.copy())
 
     class _ReportableData:
@@ -82,8 +82,8 @@ class DataHandler:
                 
             df = pd.DataFrame.from_records(output).set_index("Source")
             df["Pitched %"] = 100*(df["Pitched"]/df["Leads"])
-            df["Pitch Conv"] = 100*(df["Signs"]/df["Pitched"])
-            df["Lead Conv"] = 100*(df["Signs"]/df["Leads"])
+            df["Pitch-Signed"] = 100*(df["Signs"]/df["Pitched"])
+            df["Lead-Signed"] = 100*(df["Signs"]/df["Leads"])
             df.fillna(0, inplace = True)
             
             return df
@@ -205,5 +205,5 @@ class DataHandler:
 
 if __name__ == "__main__":
     data = DataHandler(os.getcwd() + "/Data/Data.xlsx")
-    office = data.getAllData()
-    office.closerLeadCounts()
+    office = data.getOfficeData()
+    counts = office.closerLeadCounts()
