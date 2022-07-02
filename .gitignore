@@ -8,3 +8,5 @@ assets/
 __pycache__/
 build/
 *.spec
+dist/AllCloserReports.exe
+dist/
