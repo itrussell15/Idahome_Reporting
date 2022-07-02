@@ -10,6 +10,7 @@ import os, datetime
 import matplotlib.pyplot as plt
 import matplotlib
 from global_functions import *
+import logging
 
 class DataHandler:
 
@@ -193,7 +194,7 @@ class DataHandler:
         def __init__(self, data):
             super().__init__("All", data)
             
-        def closerLeadCounts(self):
+        def closerLeadGeneration(self):
             everything = pd.DataFrame()
             for closer in self.leads["Lead Owner"].unique():
                 closerData = self.leads[self.leads["Lead Owner"] == closer].groupby("Lead Source")["ID"].count()
@@ -203,9 +204,11 @@ class DataHandler:
             everything = everything.transpose()
             everything.fillna(0.0, inplace = True)
             everything.drop("No Owner", inplace = True)
+            everything["Last 6 Wks"] = everything.sum(axis = 1)
+            everything.sort_values(by = "Last 6 Wks", ascending = False, inplace = True)
             return everything
 
 if __name__ == "__main__":
-    data = DataHandler("/Data/Data.xlsx")
+    data = DataHandler("Data/Data.xlsx")
     office = data.getOfficeData()
-    counts = office.closerLeadCounts()
+    counts = office.closerLeadGeneration()

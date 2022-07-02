@@ -5,7 +5,7 @@ Created on Sat Jun 11 18:56:46 2022
 @author: Schmuck
 """
 
-from ReportGenerator import CloserReport, OfficeReport
+from ReportGenerator import IndividualReport, OfficeReport
 from DataHandler import DataHandler
 
 data = DataHandler("Data/Data.xlsx")
@@ -17,7 +17,7 @@ office_report.output()
 
 for i in closers:
     try:
-        report = CloserReport(i, handler = data)
+        report = IndividualReport(i, handler = data)
         report.output()
         print("Created Report for {}".format(i))
     except:
