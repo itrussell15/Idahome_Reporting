@@ -6,3 +6,5 @@ assets/
 !assets/logo.png
 .DS_Store
 __pycache__/
+build/
+*.spec

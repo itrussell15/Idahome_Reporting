@@ -10,6 +10,7 @@ from DataHandler import DataHandler
 import datetime, os
 import numpy as np
 import pandas as pd
+from global_functions import *
 
 class Report(FPDF):
     
@@ -21,7 +22,7 @@ class Report(FPDF):
         self.HEIGHT = 297
         self._title = title
         self._font = "Courier"
-        self._fig_path = fig_path 
+        self._fig_path = resource_path(fig_path)
         self._epw = self.w - self.l_margin
         
         
@@ -34,7 +35,7 @@ class Report(FPDF):
         self.add_page()
         
     def header(self):
-        self.image("assets/logo.png", 10, 8, 33)
+        self.image(resource_path("assets/logo.png"), 10, 8, 33)
         self.ln(10)
         # Arial bold 15
         self.set_font(self._font, 'B', 30)
@@ -59,7 +60,7 @@ class Report(FPDF):
         
     def output(self):
         thisTime = datetime.datetime.now()     
-        self.out_path = "output/{}_Report_{}.pdf".format(self._title, thisTime.strftime("%m-%d-%Y"))
+        self.out_path = resource_path("output/{}_Report_{}.pdf".format(self._title, thisTime.strftime("%m-%d-%Y")))
         super().output(self.out_path, "F")
         
     def _cleanFigureFolder(self, path):
@@ -69,7 +70,7 @@ class Report(FPDF):
 
     def create_body(self, subject):
         
-        def create_table(self, data, title, cell_size, title_size = 15, cell_sizes = 9):
+        def create_table(self, data, title, cell_size, title_size = 15, cell_text_size = 9):
             self.set_font(self._font, 'B', 15)
             self.cell(0, h = 10, txt = title, align = 'C')
             self.ln(10)
@@ -83,10 +84,10 @@ class Report(FPDF):
                 # self.y = cell_size[1] * n
                 self.x = to_center
                 if n == 0:
-                    self.set_font(self._font, 'B', size = cell_sizes)
+                    self.set_font(self._font, 'B', size = cell_text_size)
                     self.y = self.y + (cell_size[1] * n)
                 else:
-                    self.set_font(self._font, size = cell_sizes)
+                    self.set_font(self._font, size = cell_text_size)
                     self.y += cell_size[1]
                 if self.y > self.HEIGHT - self.b_margin - self.t_margin:
                     self.add_page()
@@ -144,11 +145,11 @@ class OfficeReport(Report):
     
         def __init__(self, path = None, handler = None):
             super().__init__("Office", handler = handler, data_path = path)
-            office = self._data.getAllData()
+            office = self._data.getOfficeData()
             self.create_body(office)
 
 if __name__ == "__main__":
-    path = os.getcwd() + "/Data/Data.xlsx"
-    # report = OfficeReport(path = path)
-    report = CloserReport("Zach Trussell", path = path)
+    path = "/Data/Data.xlsx"
+    report = OfficeReport(path = path)
+    # report = CloserReport("Zach Trussell", path = path)
     report.output()

@@ -9,11 +9,13 @@ import pandas as pd
 import os, datetime
 import matplotlib.pyplot as plt
 import matplotlib
+from global_functions import *
 
 class DataHandler:
 
     def __init__(self, data_path):
-        self.df = pd.read_excel(data_path)
+        path = resource_path(data_path)
+        self.df = pd.read_excel(path)
         self.df["Lead Status"].fillna("Disposition Not Set", inplace = True)
         self.df["Lead Source"].fillna("No Lead Source", inplace = True)
         self.df["Lead Owner"].fillna("No Owner", inplace = True)
@@ -36,7 +38,7 @@ class DataHandler:
     #         raise KeyError('{} has no leads in this data'.format(name))
 
     def getOfficeData(self):
-        return self._AllData(self.df.copy())
+        return self._OfficeData(self.df.copy())
 
     class _ReportableData:
 
@@ -99,7 +101,7 @@ class DataHandler:
             try:
                 return group.loc[value]
             except:
-                print("{} not found in grouping")
+                # print("{} not found in grouping")
                 return 0
 
         
@@ -173,12 +175,12 @@ class DataHandler:
             if save_image:
                 # print(__name__)
                 if __name__ != "__main__":
-                    path = os.getcwd() + "{}/{}.png".format(path, title)
+                    path = "{}/{}.png".format(path, title)
                 else:
-                    path = os.getcwd() + "{}/{}_{}.png".format(path, self.name, column)
+                    path = "{}/{}_{}.png".format(path, self.name, column)
                 figure = plt.gcf() # get current figure
                 figure.set_size_inches(18, 8)
-                plt.savefig(path, dpi = 100)
+                plt.savefig(resource_path(path), dpi = 100)
                 plt.close()
 
     class _CloserData(_ReportableData):
@@ -186,7 +188,7 @@ class DataHandler:
         def __init__(self, closer_name, data):
             super().__init__(closer_name, data)
 
-    class _AllData(_ReportableData):
+    class _OfficeData(_ReportableData):
 
         def __init__(self, data):
             super().__init__("All", data)
@@ -204,6 +206,6 @@ class DataHandler:
             return everything
 
 if __name__ == "__main__":
-    data = DataHandler(os.getcwd() + "/Data/Data.xlsx")
+    data = DataHandler("/Data/Data.xlsx")
     office = data.getOfficeData()
     counts = office.closerLeadCounts()
