@@ -13,14 +13,15 @@ import pandas as pd
 from global_functions import *
 import logging
 
-class CloserReport(FPDF):
+class Report(FPDF):
     
-    def __init__(self, title, handler, data_path, fig_path = "/assets/temp"):
+    def __init__(self, title, report_type, handler, data_path, fig_path = "/assets/temp"):
         super().__init__()
         if not data_path and not handler:
             raise ValueError("Either data_path or handler should be passed in")
         self.WIDTH = 210
         self.HEIGHT = 297
+        self._report_type = report_type
         self._title = title
         self._font = "Courier"
         self._fig_path = resource_path(fig_path)
@@ -42,8 +43,14 @@ class CloserReport(FPDF):
         # Move to the right
         self.cell(80)
         # Title
-        self.cell(60, 10, "{} Report".format(self._title), align = "C")
-        self.ln(11)
+        self.cell(60, 10, "{} Report".format(self._report_type), align = "C")
+        self.ln(9)
+        # Sub Title
+        self.set_font(self._font, 'I', 18)
+        self.cell(80)
+        self.cell(60, 10, "{}".format(self._title), align = "C")
+        self.ln(8)
+        # Date Range
         self.set_font(self._font, 'B', 15)
         self.cell(220, 10, "{} - {}".format(
             (datetime.datetime.today() - datetime.timedelta(weeks = 6)).strftime("%m/%d/%Y"), datetime.date.today().strftime("%m/%d/%Y")), align = "C")
@@ -64,7 +71,7 @@ class CloserReport(FPDF):
         super().output(self.out_path, "F")
         
     def _cleanFigureFolder(self, path):
-        path = os.getcwd() + path
+        path = resource_base() + "/" + path
         for file in os.listdir(path):
             os.remove(path + "/" + file)
             
@@ -88,7 +95,7 @@ class CloserReport(FPDF):
                 self.y += cell_size["height"]
             if self.y > self.HEIGHT - self.b_margin - self.t_margin:
                 self.add_page()
-                self.y = self.t_margin + 35
+                self.y = self.t_margin + 40
                 self.x = to_center
             # Cells in row
             for o, (value, width) in enumerate(zip(row, cell_size["widths"])):
@@ -96,6 +103,16 @@ class CloserReport(FPDF):
                 self.multi_cell(width, cell_size["height"], value, border = 1, align = "C")
                 self.x = sum([i for i in cell_size["widths"][:o + 1]]) + to_center
                 self.y = top
+    
+
+class CloserReport(Report):
+    
+    def __init__(self, title, data_handler = None, data_path = None):
+        super().__init__(title = title,
+                         report_type = "Closer",
+                         handler = data_handler,
+                         data_path = data_path)
+    
                 
     def _create_KPI_table(self, subject):
         cell_size = {"height": 6, "widths": [45, 45, 45]}
@@ -119,47 +136,10 @@ class CloserReport(FPDF):
         bulk = pd.DataFrame(np.vstack([temp.columns, temp]))
         self._createTable(bulk.values, "Sources", cell_size)
 
-    def create_body(self, subject, include_owner = False):        
-        height = 6
-        # data = [["Pitched-Lead", "Signed-Pitched", "Pull Through"],
-        #         ["{:.2f} %".format(subject.pitchRatio), "{:.2f} %".format(subject.closeRatio), "{:.2f} %".format(subject.pullThroughRatio)]]
-        
-        # cell_size = {"height": height, "widths": [45, 45, 45]}
-        # self._createTable(data, "KPIs", cell_size, cell_text_size = 12)
-        
-        self.ln(10)
-        
-        headers = ["Source"]
-        headers.extend(list(subject.finalTable.columns))
-        temp = subject.finalTable.copy()
-        for i in ["Pitched %", "Pitch-Signed", "Lead-Signed"]:
-            temp[i] = temp[i].apply(lambda x: "{:.2f}".format(x))
-        for i in ["Leads", "Signs", "Pitched"]:
-            temp[i] = temp[i].apply(lambda x: "{}".format(x))
-        temp.reset_index(inplace = True)
-        bulk = pd.DataFrame(np.vstack([temp.columns, temp]))
-        cell_size = {"height": height, "widths": [40, 20, 20, 20, 30, 30]}
-        self._createTable(bulk.values, "Sources", cell_size)
-        
-        self.ln(10) 
-        
-        if include_owner:
-            pull_values = ["Customer", "Lead Source", "Lead Status", "Lead Owner"]
-            cell_size = {"height": height, "widths": [65, 38, 40, 40]}
-            customers = subject.leads[pull_values].fillna("Null")
-            customers.sort_values(by = "Lead Owner", ascending = True, inplace = True)
-            customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
-        else:
-            pull_values = ["Customer", "Lead Source", "Lead Status"]
-            cell_size = {"height": height, "widths": [65, 38, 40]}
-            customers = subject.leads[pull_values].fillna("Null")
-            customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
-        self._createTable(customers, "Customers", cell_size)
-        
 class IndividualReport(CloserReport):
     
     def __init__(self, closer_name, handler = None, path = None):
-        super().__init__(closer_name, handler, path)
+        super().__init__(closer_name, data_handler = handler, data_path = path)
         closer = self._data.getCloserData(closer_name)
         self.create_body(closer)    
         
@@ -177,13 +157,12 @@ class IndividualReport(CloserReport):
         customers = subject.leads[pull_values].fillna("Null")
         customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
         self._createTable(customers, "Customers", cell_size)
-    
         
 class OfficeReport(CloserReport):
     
     def __init__(self, path = None, handler = None):
-        super().__init__("Office", handler = handler, data_path = path)
-        office = self._data.getOfficeData()
+        super().__init__("Idahome Solar", data_handler = handler, data_path = path)
+        office = self._data.getCloserData()
         self.create_body(office)
         
     def create_body(self, office):
@@ -192,28 +171,36 @@ class OfficeReport(CloserReport):
         self._createSourceMatrix(office)
         self.ln(10)
         self._LeadGenerationMatrix(office)
-        self.ln(10)
-        
         self.add_page()
+        self._LeadStatusMatrix(office)
+        self.ln(10)
         self._customerTable(office)
         
     def _LeadGenerationMatrix(self, subject):
         # Get data as single numbers and into strings
         data = subject.closerLeadGeneration().astype(int).astype(str)
         
-        # Bring Last 6 weeks to the left
-        cols = data.columns.tolist()
-        cols = cols[-1:] + cols[:-1]
-        data = data[cols]
-        
         data.reset_index(inplace = True)
         data = data.rename(columns = {'index':'Closer', "Website/Called In": "Website"})
-        widths = [18 for _ in range(len(data))]
+        widths = [18 for _ in range(len(data.columns))]
         widths[0] = 35
         cell_size = {"height": 6, "widths": widths}
         data = pd.DataFrame(np.vstack([data.columns, data])).values
         
         self._createTable(data, "Lead Generation Matrix", cell_size, header_size=5)
+        
+    def _LeadStatusMatrix(self, subject):
+        # Get data as single numbers and into strings
+        data = subject.closerLeadStatus().astype(int).astype(str)
+        
+        data.reset_index(inplace = True)
+        data = data.rename(columns = {"index": "Closer"})
+        widths = [20 for _ in range(len(data.columns))]
+        widths[0] = 35
+        cell_size = {"height": 6, "widths": widths}
+        data = pd.DataFrame(np.vstack([data.columns, data])).values
+        
+        self._createTable(data, "Lead Status Matrix", cell_size, header_size = 5)
         
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [65, 38, 40, 40]}

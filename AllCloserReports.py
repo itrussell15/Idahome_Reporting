@@ -9,13 +9,12 @@ from ReportGenerator import IndividualReport, OfficeReport
 from DataHandler import DataHandler
 
 data = DataHandler("Data/Data.xlsx")
-office = data.getOfficeData()
-closers = office.leads["Lead Owner"].unique()
 
-office_report = OfficeReport(office, handler = data)
+office_report = OfficeReport(handler = data)
 office_report.output()
+print("Created Office Report")
 
-for i in closers:
+for i in data.closers:
     try:
         report = IndividualReport(i, handler = data)
         report.output()
@@ -23,3 +22,4 @@ for i in closers:
     except:
         pass
         # print("**ERROR on {}***".format(i))
+        
