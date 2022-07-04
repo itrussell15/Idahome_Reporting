@@ -9,3 +9,6 @@ __pycache__/
 build/
 *.spec
 dist/
+build_archive/
+IdahomeHours.ods
+*.ods#
