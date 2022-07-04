@@ -187,7 +187,7 @@ class OfficeReport(CloserReport):
         cell_size = {"height": 6, "widths": widths}
         data = pd.DataFrame(np.vstack([data.columns, data])).values
         
-        self._createTable(data, "Lead Generation Matrix", cell_size, header_size=5)
+        self._createTable(data, "Lead Source by Rep", cell_size, header_size=5)
         
     def _LeadStatusMatrix(self, subject):
         # Get data as single numbers and into strings
@@ -200,7 +200,7 @@ class OfficeReport(CloserReport):
         cell_size = {"height": 6, "widths": widths}
         data = pd.DataFrame(np.vstack([data.columns, data])).values
         
-        self._createTable(data, "Lead Status Matrix", cell_size, header_size = 5)
+        self._createTable(data, "Lead Status by Rep", cell_size, header_size = 5)
         
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [65, 38, 40, 40]}
@@ -213,6 +213,6 @@ class OfficeReport(CloserReport):
 
 if __name__ == "__main__":
     path = "Data/Data.xlsx"
-    report = OfficeReport(path = path)
-    # report = IndividualReport("Zach Trussell", path = path)
+    # report = OfficeReport(path = path)
+    report = IndividualReport("Cole Newell", path = path)
     report.output()

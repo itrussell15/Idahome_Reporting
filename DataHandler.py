@@ -31,6 +31,8 @@ class DataHandler:
     
     def _getUnique(self, column):
         return self.df[column].unique()
+    
+
 
     def getCloserData(self, name = None):
         if name:
@@ -74,6 +76,8 @@ class DataHandler:
             except:
                 # print("{} not found in grouping")
                 return 0        
+        
+
 
         # Only returns a number of pitched leads. See _getPitchedLeads for the DF with customer information
         def _getPitched(self):
@@ -100,18 +104,30 @@ class DataHandler:
             self.numSigns = self._getGroupedTotal("Signed", self._status)
             self.numLeads = len(self.leads) - self.numSelfGens
             self.numSits = self._getPitched()
-
-            self.closeRatio = 100 * (self.numSigns/self.numSits)
-            self.closeRatioTotal = 100 * (self.numSigns/self.numLeads)
-            self.pitchRatio = 100 * (self.numSits/self.numLeads)
-            self.pullThroughRatio = 100 * (self.numSigns/(self.numSigns + self._getGroupedTotal("Signed- Canceled", self._status)))
+            
+            self.closeRatio = self._potentialDivisionError(self.numSigns, self.numSits)
+            self.closeRatioTotal = self._potentialDivisionError(self.numSigns, self.numLeads)
+            self.pitchRatio = self._potentialDivisionError(self.numSits, self.numLeads)
+            self.pullThroughRatio = self._potentialDivisionError(self.numSigns, (self.numSigns + self._getGroupedTotal("Signed- Canceled", self._status)))
             
             self.finalTable = self._finalTable()
             
         def __repr__(self):
             return self.leads
-        
-    
+
+        # Handles potential ZeroDivisionErrors while running the rep
+        @staticmethod
+        def _potentialDivisionError(num, denom, percentage = True):
+            try:
+                if percentage:
+                    return 100 * (num/denom)
+                else:
+                    return num/denom
+            except ZeroDivisionError:
+                return 0
+            except:
+                raise ValueError("Non ZeroDivisionError occured")
+
         # Shows the conversion efficiency of various lead methods
         def _finalTable(self):
             
@@ -180,5 +196,5 @@ class DataHandler:
 
 if __name__ == "__main__":
     data = DataHandler(os.getcwd() + "/Data/Data.xlsx")
-    out = data.getCloserData()
-    counts = out.closerLeadStatus()
+    out = data.getCloserData("Cole Newell")
+    # counts = out.closerLeadStatus()

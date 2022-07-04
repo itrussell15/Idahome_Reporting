@@ -8,13 +8,8 @@ assets/
 __pycache__/
 build/
 *.spec
-<<<<<<< HEAD
-dist/AllCloserReports.exe
-dist/
-=======
 dist/
 build_archive/
 IdahomeHours.ods
 *.ods#
->>>>>>> feature/updates
 *.orig
