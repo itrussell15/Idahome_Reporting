@@ -156,7 +156,7 @@ class IndividualReport(CloserReport):
         pull_values = ["Customer", "Lead Source", "Lead Status"]
         customers = subject.leads[pull_values].fillna("Null")
         customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
-        self._createTable(customers, "Customers", cell_size)
+        self._createTable(customers, "Leads", cell_size)
         
 class OfficeReport(CloserReport):
     
@@ -209,7 +209,7 @@ class OfficeReport(CloserReport):
         customers = subject.leads[pull_values].fillna("Null")
         customers.sort_values(by = "Lead Owner", ascending = True, inplace = True)
         customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
-        self._createTable(customers, "Customers", cell_size)
+        self._createTable(customers, "Leads", cell_size)
 
 if __name__ == "__main__":
     path = "Data/Data.xlsx"
