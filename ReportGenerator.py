@@ -113,7 +113,7 @@ class CloserReport(Report):
                          handler = data_handler,
                          data_path = data_path)
     
-                
+    # Soon be deprecated
     def _create_KPI_table(self, subject):
         cell_size = {"height": 6, "widths": [45, 45, 45]}
         data = [["Pitched-Lead", "Signed-Pitched", "Pull Through"],
@@ -121,6 +121,7 @@ class CloserReport(Report):
         
         self._createTable(data, "KPIs", cell_size, cell_text_size = 12)
 
+    # Migrate this to DataHandler
     def _createSourceMatrix(self, subject):
         cell_size = {"height": 6, "widths": [40, 20, 20, 20, 30, 30]}
         
@@ -131,6 +132,7 @@ class CloserReport(Report):
             temp[i] = temp[i].apply(lambda x: "{:.2f}".format(x))
         for i in ["Leads", "Signs", "Pitched"]:
             temp[i] = temp[i].apply(lambda x: "{}".format(x))
+            
         temp.reset_index(inplace = True)
         
         bulk = pd.DataFrame(np.vstack([temp.columns, temp]))
@@ -213,6 +215,6 @@ class OfficeReport(CloserReport):
 
 if __name__ == "__main__":
     path = "Data/Data.xlsx"
-    # report = OfficeReport(path = path)
-    report = IndividualReport("Cole Newell", path = path)
+    report = OfficeReport(path = path)
+    # report = IndividualReport("Cole Newell", path = path)
     report.output()

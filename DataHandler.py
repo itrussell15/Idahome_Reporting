@@ -161,16 +161,21 @@ class DataHandler:
         def closerLeadGeneration(self):
             everything = pd.DataFrame()
             for closer in self.leads["Lead Owner"].unique():
-                closerData = self.leads[self.leads["Lead Owner"] == closer].groupby("Lead Source")["ID"].count()
-                closerData.name = closer
-                everything = pd.concat([everything, closerData], axis = 1)
+                if closer not in ["Enerflo Admin", "No Owner"]:
+                    closerData = self.leads[self.leads["Lead Owner"] == closer].groupby("Lead Source")["ID"].count()
+                    closerData.name = closer
+                    everything = pd.concat([everything, closerData], axis = 1)
                 
             everything = everything.transpose()
             everything.fillna(0.0, inplace = True)
-            everything.drop("No Owner", inplace = True)
             everything["Last 6 Wks"] = everything.sum(axis = 1)
             everything.sort_values(by = "Last 6 Wks", ascending = False, inplace = True)
             
+            try:
+                everything.drop("Enerflo Admin", axis = 0, inplace = True)
+            except:
+                pass
+
             # Bring Last 6 weeks to the left
             cols = everything.columns.tolist()
             cols = cols[-1:] + cols[:-1]
@@ -181,20 +186,27 @@ class DataHandler:
         def closerLeadStatus(self):
             everything = pd.DataFrame()
             for closer in self.leads["Lead Owner"].unique():
-                closerData = self.leads[self.leads["Lead Owner"] == closer].groupby("Lead Status")["ID"].count()
-                closerData.name = closer
-                everything = pd.concat([everything, closerData], axis = 1)
+                if closer not in ["Enerflo Admin", "No Owner"]:
+                    closerData = self.leads[self.leads["Lead Owner"] == closer].groupby("Lead Status")["ID"].count()
+                    closerData.name = closer
+                    everything = pd.concat([everything, closerData], axis = 1)
             
             everything = everything.transpose()
             everything.fillna(0.0, inplace = True)
-            everything.drop("No Owner", inplace = True)
             everything["sum"] = everything.sum(axis = 1)
             everything.sort_values(by = "sum", ascending = False, inplace = True)
             everything.drop("sum", axis = 1, inplace = True)
+            try:
+                everything.drop("Enerflo Admin", axis = 0, inplace = True)
+            except:
+                pass
             
             return everything
+        
+        
 
 if __name__ == "__main__":
     data = DataHandler(os.getcwd() + "/Data/Data.xlsx")
-    out = data.getCloserData("Cole Newell")
-    # counts = out.closerLeadStatus()
+    # out = data.getCloserData("Cole Newell")
+    out = data.getCloserData()
+    counts = out.closerLeadStatus()

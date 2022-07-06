@@ -16,9 +16,10 @@ print("Created Office Report")
 
 for i in data.closers:
     try:
-        report = IndividualReport(i, handler = data)
-        report.output()
-        print("Created Report for {}".format(i))
+        if i not in ["Enerflo Admin", "No Owner"]:
+            report = IndividualReport(i, handler = data)
+            report.output()
+            print("Created Report for {}".format(i))
     except:
         pass
         # print("**ERROR on {}***".format(i))

@@ -1,16 +1,7 @@
 -Add row to the bottom of source table to show totals. remove KPI table because that data will be redundant.
 
--Figure out why some reps are getting their reports pulled
-
--Ranking table (future thing)
-
 -Change no dispos to the far right
 
 -Lead Status order --> Pitched, Not Pitched, Canceled, No Show, Signed, Signed-Canceled, DNQ, No Dispo
 
--Lead Generation Matrix --> Lead Source by Rep
-
--Lead Status Matrix --> Lead Status by Rep
-
 -Lead status by rep --> Add totals to the bottom
-
