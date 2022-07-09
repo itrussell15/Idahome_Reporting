@@ -4,7 +4,7 @@ Created on Fri Jun 10 22:57:51 2022
 
 @author: Schmuck
 """
-
+# %% Imports
 import pandas as pd
 import os, datetime
 import matplotlib.pyplot as plt
@@ -14,15 +14,16 @@ pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 200)
 
+# %% Data Handler
 class DataHandler:
 
     def __init__(self, data_path):
-        self.df = pd.read_excel(data_path)
-        self.df["Lead Status"].fillna("No Dispo", inplace = True)
-        self.df["Lead Source"].fillna("No Lead Source", inplace = True)
-        self.df["Lead Owner"].fillna("No Owner", inplace = True)
-        self.df["Setter"].fillna("No Setter", inplace = True)
-        self.df["Office"].fillna("No Office", inplace = True)
+        self._df = pd.read_excel(data_path)
+        self._df["Lead Status"].fillna("No Dispo", inplace = True)
+        self._df["Lead Source"].fillna("No Lead Source", inplace = True)
+        self._df["Lead Owner"].fillna("No Owner", inplace = True)
+        self._df["Setter"].fillna("No Setter", inplace = True)
+        self._df["Office"].fillna("No Office", inplace = True)
         
         self.closers = self._getClosers()
         self.setters = self._getSetters()
@@ -34,19 +35,31 @@ class DataHandler:
         return self._getUnique("Setter")
     
     def _getUnique(self, column):
-        return self.df[column].unique()
+        return self._df[column].unique()
     
     def getCloserData(self, name = None):
         if name:
-            if name in self.df["Lead Owner"].unique():
-                closerData = self.df.loc[self.df["Lead Owner"] == name].copy()
+            if name in self._getClosers():
+                closerData = self._df.loc[self._df["Lead Owner"] == name].copy()
                 closerData.drop("Lead Owner", axis = 1, inplace = True)
                 return self._InvidualData(name, closerData)
             else:
                 raise KeyError("{} has no leads in this data".format(name))
         else:
-            return self._OfficeData(self.df.copy())
+            return self._OfficeData(self._df.copy())
+        
+    def getSetterData(self, name = None):
+        
+        if name:
+            
+            if name in self._getSetters():
+                setterData = self._df.loc[self._df["Setter"] == name].copy()
+                setterData.drop("Setter", axis = 1, inplace = True)
+                return self._SetterIndvData(name, setterData)
+        else:
+            return self._SetterOfficeData(self._df.copy())
 
+# %% Reportable Data Class
     class _ReportableData:
 
         def __init__(self, name, raw_data, previous_weeks = 6):
@@ -78,8 +91,19 @@ class DataHandler:
             except:
                 # print("{} not found in grouping")
                 return 0        
-        
-
+            
+        # Handles potential ZeroDivisionErrors while running the rep
+        @staticmethod
+        def _potentialDivisionError(num, denom, percentage = True):
+            try:
+                if percentage:
+                    return 100 * (num/denom)
+                else:
+                    return num/denom
+            except ZeroDivisionError:
+                return 0
+            except:
+                raise ValueError("Non ZeroDivisionError occured")
 
         # Only returns a number of pitched leads. See _getPitchedLeads for the DF with customer information
         def _getPitched(self):
@@ -95,7 +119,8 @@ class DataHandler:
                 except AttributeError:
                     print("No Attribute {}".format(i))
             return everything
-
+        
+# %% Closers Classes
     class _CloserData(_ReportableData):
         
         def __init__(self, name, raw_data, previous_weeks = 6):
@@ -116,19 +141,6 @@ class DataHandler:
             
         def __repr__(self):
             return self.leads
-
-        # Handles potential ZeroDivisionErrors while running the rep
-        @staticmethod
-        def _potentialDivisionError(num, denom, percentage = True):
-            try:
-                if percentage:
-                    return 100 * (num/denom)
-                else:
-                    return num/denom
-            except ZeroDivisionError:
-                return 0
-            except:
-                raise ValueError("Non ZeroDivisionError occured")
 
         # Shows the conversion efficiency of various lead methods
         def _finalTable(self):
@@ -206,9 +218,29 @@ class DataHandler:
             cols = ["Pitched", "Not Pitched", "Canceled", "No Show", "Signed", "Signed- Canceled", "DNQ", "No Dispo"]
             everything = everything[cols]
             return everything        
+# %% Setters Classes
 
+    class _SetterData(_ReportableData):
+        
+        def __init__(self, name, raw_data, previous_weeks = 6):
+            super().__init__(name, raw_data, previous_weeks)
+            
+    class _SetterIndvData(_SetterData):
+
+        def __init__(self, setter_name, data):
+            super().__init__(setter_name, data)
+            
+    class _SetterOfficeData(_SetterData):
+
+        def __init__(self, data):
+            super().__init__("Office", data)
+            
+
+#%% Main
 if __name__ == "__main__":
     data = DataHandler(os.getcwd() + "/Data/Data.xlsx")
-    out = data.getCloserData("Cole Newell")
-    office = data.getCloserData()
-    counts = office.closerLeadStatus()
+    # setters = data.getSetterData()
+    setter = data.getSetterData("Jake Hagerty")
+    # out = data.getCloserData("Cole Newell")
+    # office = data.getCloserData()
+    # counts = office.closerLeadStatus()

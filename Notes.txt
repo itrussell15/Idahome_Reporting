@@ -1,1 +1,14 @@
--Setter Report
+*Setter Report
+
+-Look into Sales Rabbit API
+
+-Setter KPIs
+    -Pitched/ Leads
+    -Total Leads Created
+    -No show (and canceled?) / Leads
+    -Sign / Leads
+    
+-Customer Table (Office)
+    -Customer Name | Status | Setter
+
+    

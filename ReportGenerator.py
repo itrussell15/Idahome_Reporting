@@ -13,6 +13,7 @@ import pandas as pd
 from global_functions import *
 import logging
 
+# %% Base Report Template
 class Report(FPDF):
     
     def __init__(self, title, report_type, handler, data_path, fig_path = "/assets/temp"):
@@ -115,8 +116,8 @@ class Report(FPDF):
                 self.x = sum([i for i in cell_size["widths"][:o + 1]]) + to_center
                 self.y = top
     
-
-class CloserReport(Report):
+# %% Closer Report
+class _CloserReport(_Report):
     
     def __init__(self, title, data_handler = None, data_path = None):
         super().__init__(title = title,
@@ -155,7 +156,7 @@ class CloserReport(Report):
         bulk = pd.DataFrame(np.vstack([temp.columns, temp]))
         self._createTable(bulk.values, "Sources", cell_size, bold_rows = [len(temp)])
 
-class IndividualReport(CloserReport):
+class IndividualReport(_CloserReport):
     
     def __init__(self, closer_name, handler = None, path = None):
         super().__init__(closer_name, data_handler = handler, data_path = path)
@@ -163,8 +164,6 @@ class IndividualReport(CloserReport):
         self.create_body(closer)    
         
     def create_body(self, closer):
-        self._create_KPI_table(closer)
-        self.ln(10)
         self._createSourceMatrix(closer)
         self.ln(10)
         self._customerTable(closer)
@@ -177,7 +176,7 @@ class IndividualReport(CloserReport):
         customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
         self._createTable(customers, "Leads", cell_size)
         
-class OfficeReport(CloserReport):
+class OfficeReport(_CloserReport):
     
     def __init__(self, path = None, handler = None):
         super().__init__("Idahome Solar", data_handler = handler, data_path = path)
@@ -240,8 +239,10 @@ class OfficeReport(CloserReport):
         customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
         self._createTable(customers, "Leads", cell_size)
 
+
+# %% Main 
 if __name__ == "__main__":
     path = "Data/Data.xlsx"
-    report = OfficeReport(path = path)
-    # report = IndividualReport("Cole Newell", path = path)
+    # report = OfficeReport(path = path)
+    report = IndividualReport("Cole Newell", path = path)
     report.output()
