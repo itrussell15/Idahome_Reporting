@@ -1,15 +1,23 @@
-*.xlsx#
-Data/
-Idahome Data Draft.xlsx
+#Folders
+
+dist/
 output/
 assets/
-!assets/logo.png
-.DS_Store
-__pycache__/
 build/
-*.spec
-dist/
+__pycache__/
 build_archive/
+
+#Include these from excluded places
+!assets/logo.png
+
+#Files
+Data/Data.xlsx
+Idahome Data Draft.xlsx
 IdahomeHours.ods
+.DS_Store
+
+#File Extensions
+*.spec
 *.ods#
+*.xlsx#
 *.orig
