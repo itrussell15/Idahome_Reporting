@@ -5,7 +5,7 @@ Created on Sat Jul  9 14:53:39 2022
 @author: Schmuck
 """
 
-from ReportGenerator import Report
+from ReportTemplate import Report
 import pandas as pd
 import numpy as np
 import os
@@ -77,8 +77,6 @@ class OfficeReport(_CloserReport):
         self.create_body(office)
         
     def create_body(self, office):
-        # self._create_KPI_table(office)
-        # self.ln(12)
         self._createSourceMatrix(office)
         self.ln(10)
         self._LeadGenerationMatrix(office)
@@ -135,5 +133,6 @@ class OfficeReport(_CloserReport):
 if __name__ == "__main__":
     path = os.path.dirname(os.getcwd()) + "/Data/Data.xlsx"
     # print(path)
-    report = IndividualReport("Cole Newell", path = path)
+    # report = IndividualReport("Zach Trussell", path = path)
+    report = OfficeReport(path = path)
     report.output()

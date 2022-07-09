@@ -3,7 +3,7 @@
 -Look into Sales Rabbit API
 
 -Setter KPIs
-    -Pitched/ Leads
+    -Pitched / Leads
     -Total Leads Created
     -No show (and canceled?) / Leads
     -Sign / Leads

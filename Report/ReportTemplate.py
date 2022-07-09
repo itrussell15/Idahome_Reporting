@@ -6,9 +6,10 @@ Created on Sat Jun 11 00:07:17 2022
 """
 
 import sys
-sys.path.append("../Data")
+# sys.path.append("../Data")
+sys.path.append("..")
 
-from DataHandler import DataHandler
+from Data.DataHandler import DataHandler
 from global_functions import resource_path, resource_base
 
 from fpdf import FPDF
@@ -69,7 +70,7 @@ class Report(FPDF):
     def output(self):
         thisTime = datetime.datetime.now()   
         
-        self.out_path = resource_path("output/{}_Report_{}.pdf".format(self._title, thisTime.strftime("%m-%d-%Y")))
+        self.out_path = resource_path("output/{}_{} Report_{}.pdf".format(self._title, self._report_type, thisTime.strftime("%m-%d-%Y")))
         super().output(self.out_path, "F")
         
     def _cleanFigureFolder(self, path):
