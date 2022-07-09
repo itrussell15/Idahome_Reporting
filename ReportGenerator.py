@@ -75,7 +75,15 @@ class Report(FPDF):
         for file in os.listdir(path):
             os.remove(path + "/" + file)
             
-    def _createTable(self, data, title, cell_size, title_size = 15, cell_text_size = 9, header_size = 9):
+    def _createTable(self, 
+                     data, 
+                     title, 
+                     cell_size, 
+                     title_size = 15, 
+                     cell_text_size = 9,
+                     header_size = 9,
+                     bold_rows = []
+                     ):
         self.set_font(self._font, 'B', 15)
         self.cell(0, h = 10, txt = title, align = 'C')
         self.ln(10)
@@ -85,14 +93,17 @@ class Report(FPDF):
         self.x = to_center
         
         for n, row in enumerate(data):
-            
             self.x = to_center
             if n == 0:
                 self.set_font(self._font, 'B', size = header_size)
                 self.y = self.y + (cell_size["height"] * n)
+            elif n in bold_rows:
+                self.set_font(self._font, "B", size = cell_text_size)
+                self.y += cell_size["height"]
             else:
                 self.set_font(self._font, size = cell_text_size)
                 self.y += cell_size["height"]
+                
             if self.y > self.HEIGHT - self.b_margin - self.t_margin:
                 self.add_page()
                 self.y = self.t_margin + 40
@@ -123,20 +134,26 @@ class CloserReport(Report):
 
     # Migrate this to DataHandler
     def _createSourceMatrix(self, subject):
-        cell_size = {"height": 6, "widths": [40, 20, 20, 20, 30, 30]}
+        cell_size = {"height": 6, "widths": [40, 20, 20, 20, 28, 28, 28]}
         
         headers = ["Source"]
         headers.extend(list(subject.finalTable.columns))
         temp = subject.finalTable.copy()
         for i in ["Pitched %", "Pitch-Signed", "Lead-Signed"]:
             temp[i] = temp[i].apply(lambda x: "{:.2f}".format(x))
-        for i in ["Leads", "Signs", "Pitched"]:
+        totals = []
+        for i in ["Leads", "Pitched", "Signs"]:
+            totals.append(temp[i].sum())
             temp[i] = temp[i].apply(lambda x: "{}".format(x))
+        
+        totals = [str(i) for i in totals]
+        totals.extend(["-", "-", "-"])
+        temp.loc["Totals"] = totals
             
         temp.reset_index(inplace = True)
         
         bulk = pd.DataFrame(np.vstack([temp.columns, temp]))
-        self._createTable(bulk.values, "Sources", cell_size)
+        self._createTable(bulk.values, "Sources", cell_size, bold_rows = [len(temp)])
 
 class IndividualReport(CloserReport):
     
@@ -168,8 +185,8 @@ class OfficeReport(CloserReport):
         self.create_body(office)
         
     def create_body(self, office):
-        self._create_KPI_table(office)
-        self.ln(12)
+        # self._create_KPI_table(office)
+        # self.ln(12)
         self._createSourceMatrix(office)
         self.ln(10)
         self._LeadGenerationMatrix(office)
@@ -180,21 +197,31 @@ class OfficeReport(CloserReport):
         
     def _LeadGenerationMatrix(self, subject):
         # Get data as single numbers and into strings
-        data = subject.closerLeadGeneration().astype(int).astype(str)
+        data = subject.closerLeadGeneration()
+        for_totals = data.copy().sum().values
+        data.loc["Totals"] = for_totals
         
+        data = data.astype(int).astype(str)
         data.reset_index(inplace = True)
-        data = data.rename(columns = {'index':'Closer', "Website/Called In": "Website"})
-        widths = [18 for _ in range(len(data.columns))]
+        data = data.rename(columns = {'index':'Closer',
+                                      "Website/Called In": "Website",
+                                      "No Lead Source": "No Source", 
+                                      "Sales Rabbit": "Sales Rbt"})
+        widths = [16 for _ in range(len(data.columns))]
         widths[0] = 35
         cell_size = {"height": 6, "widths": widths}
         data = pd.DataFrame(np.vstack([data.columns, data])).values
         
-        self._createTable(data, "Lead Source by Rep", cell_size, header_size=5)
+        self._createTable(data, "Lead Source by Rep", cell_size, header_size=6, bold_rows = [len(data)-1])
         
     def _LeadStatusMatrix(self, subject):
         # Get data as single numbers and into strings
-        data = subject.closerLeadStatus().astype(int).astype(str)
+        data = subject.closerLeadStatus()
+        for_totals = data.copy().sum().values
+        data.loc["Totals"] = for_totals
         
+        data = data.astype(int).astype(str) 
+        data.loc["Percentages"] = ["{:.2f}%".format(100*i) for i in for_totals/sum(for_totals)]
         data.reset_index(inplace = True)
         data = data.rename(columns = {"index": "Closer"})
         widths = [20 for _ in range(len(data.columns))]
@@ -202,7 +229,7 @@ class OfficeReport(CloserReport):
         cell_size = {"height": 6, "widths": widths}
         data = pd.DataFrame(np.vstack([data.columns, data])).values
         
-        self._createTable(data, "Lead Status by Rep", cell_size, header_size = 5)
+        self._createTable(data, "Lead Status by Rep", cell_size, header_size = 5, bold_rows = [len(data)-1, len(data)-2])
         
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [65, 38, 40, 40]}

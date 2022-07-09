@@ -1,7 +1,1 @@
--Add row to the bottom of source table to show totals. remove KPI table because that data will be redundant.
-
--Change no dispos to the far right
-
--Lead Status order --> Pitched, Not Pitched, Canceled, No Show, Signed, Signed-Canceled, DNQ, No Dispo
-
--Lead status by rep --> Add totals to the bottom
+-Setter Report

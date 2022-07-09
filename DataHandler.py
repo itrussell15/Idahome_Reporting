@@ -10,6 +10,10 @@ import os, datetime
 import matplotlib.pyplot as plt
 import matplotlib
 
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.max_columns', 500)
+pd.set_option('display.width', 200)
+
 class DataHandler:
 
     def __init__(self, data_path):
@@ -32,8 +36,6 @@ class DataHandler:
     def _getUnique(self, column):
         return self.df[column].unique()
     
-
-
     def getCloserData(self, name = None):
         if name:
             if name in self.df["Lead Owner"].unique():
@@ -138,7 +140,7 @@ class DataHandler:
                 source_leads = self.leads[self.leads["Lead Source"] == i]
                 signed_leads = source_leads[source_leads["Lead Status"] == "Signed"]
                 pitched_leads = self._getPitchedLeads(source_leads)
-                output.append({"Source": i, "Leads": len(source_leads), "Signs": len(signed_leads), "Pitched": len(pitched_leads)})
+                output.append({"Source": i, "Leads": len(source_leads), "Pitched": len(pitched_leads), "Signs": len(signed_leads)})
                 
             df = pd.DataFrame.from_records(output).set_index("Source")
             df["Pitched %"] = 100*(df["Pitched"]/df["Leads"])
@@ -161,10 +163,10 @@ class DataHandler:
         def closerLeadGeneration(self):
             everything = pd.DataFrame()
             for closer in self.leads["Lead Owner"].unique():
-                if closer not in ["Enerflo Admin", "No Owner"]:
-                    closerData = self.leads[self.leads["Lead Owner"] == closer].groupby("Lead Source")["ID"].count()
-                    closerData.name = closer
-                    everything = pd.concat([everything, closerData], axis = 1)
+                # if closer not in ["Enerflo Admin", "No Owner"]:
+                closerData = self.leads[self.leads["Lead Owner"] == closer].groupby("Lead Source")["ID"].count()
+                closerData.name = closer
+                everything = pd.concat([everything, closerData], axis = 1)
                 
             everything = everything.transpose()
             everything.fillna(0.0, inplace = True)
@@ -201,12 +203,12 @@ class DataHandler:
             except:
                 pass
             
-            return everything
-        
-        
+            cols = ["Pitched", "Not Pitched", "Canceled", "No Show", "Signed", "Signed- Canceled", "DNQ", "No Dispo"]
+            everything = everything[cols]
+            return everything        
 
 if __name__ == "__main__":
     data = DataHandler(os.getcwd() + "/Data/Data.xlsx")
-    # out = data.getCloserData("Cole Newell")
-    out = data.getCloserData()
-    counts = out.closerLeadStatus()
+    out = data.getCloserData("Cole Newell")
+    office = data.getCloserData()
+    counts = office.closerLeadStatus()
