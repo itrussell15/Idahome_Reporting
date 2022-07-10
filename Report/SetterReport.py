@@ -22,13 +22,13 @@ class _SetterReport(Report):
                          data_path = data_path)
         
     def KPIs(self, subject):
-        columns = ["Total Leads", "Lead-Pitched", "Lead-Signed",  "% No Show"]
-        data = [subject.numLeads, subject.pitchRatio, subject.closeRatio,  subject.cancelRatio]
+        columns = ["Total Leads", "Lead-Pitched",  "% No Show"]
+        data = [subject.numLeads, subject.pitchRatio,  subject.cancelRatio]
         data = ["{:.2f}%".format(i) for i in data]
         data[0] = str(subject.numLeads)
         final = [columns, data]
         
-        cell_size = {"height": 6, "widths": [35, 35, 35, 35]}
+        cell_size = {"height": 6, "widths": [35, 35, 35]}
         self._createTable(final, "KPIs", cell_size = cell_size)
     
 class SetterIndividualReport(_SetterReport):
@@ -77,7 +77,7 @@ class SetterOfficeReport(_SetterReport):
 if __name__ == "__main__":
     import os
     path = os.path.dirname(os.getcwd()) + "/Data/Data.xlsx"
-    # report = SetterIndividualReport("Cole Newell", path = path)
+    report = SetterIndividualReport("Cole Newell", path = path)
     report = SetterOfficeReport(path = path)
     report.output()
     

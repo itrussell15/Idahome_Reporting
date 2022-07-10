@@ -61,8 +61,8 @@ class DataHandler:
 
 if __name__ == "__main__":
     data = DataHandler(os.getcwd() + "/Data.xlsx")
-    out = data.getCloserData()
-    out.closerLeadStatus()
-    # setter = data.getSetterData()
+    # out = data.getCloserData()
+    # out.closerLeadStatus()
+    setter = data.getSetterData()
     
     

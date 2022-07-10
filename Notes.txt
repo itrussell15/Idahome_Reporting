@@ -2,13 +2,8 @@
 
 -Look into Sales Rabbit API
 
--Setter KPIs
-    -Pitched / Leads
-    -Total Leads Created
-    -No show (and canceled?) / Leads
-    -Sign / Leads
-    
--Customer Table (Office)
-    -Customer Name | Status | Setter
+-Yes no if text in last appt
+    - Add to closer and setters
+    - Office and Indv
 
-    
+- Make it so closers don't show up as setters

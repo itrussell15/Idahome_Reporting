@@ -18,7 +18,10 @@ class ReportableData:
             self.leads = raw_data[raw_data["Added"] >= today - datetime.timedelta(weeks = previous_weeks)]
         else:
             self.leads = raw_data
-            
+        
+        if self.leads.empty:
+            raise ValueError("{} has no leads".format(self.name))
+        
         self._source = self._groupedOutput("Lead Source")
         self._status = self._groupedOutput("Lead Status")
         

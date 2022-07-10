@@ -13,6 +13,8 @@ class _SetterData(ReportableData):
         super().__init__(name, raw_data, previous_weeks)
         
         self.numLeads = len(self.leads)
+    
+        
         self.numSigns = self._getGroupedTotal("Signed", self._status)
         self.numPitched = self._getPitched()
         
@@ -34,3 +36,5 @@ class SetterOfficeData(_SetterData):
         super().__init__("Office", data)
         self.leads = self.leads[self.leads["Setter"] != "No Setter"]
         
+
+    

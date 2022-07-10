@@ -122,7 +122,7 @@ class OfficeReport(_CloserReport):
         self._createTable(data, "Lead Status by Rep", cell_size, header_size = 5, bold_rows = [len(data)-1, len(data)-2])
         
     def _customerTable(self, subject):
-        cell_size = {"height": 6, "widths": [65, 38, 40, 40]}
+        cell_size = {"height": 6, "widths": [65, 38, 30, 40]}
         
         pull_values = ["Customer", "Lead Source", "Lead Status", "Lead Owner"]
         customers = subject.leads[pull_values].fillna("Null")

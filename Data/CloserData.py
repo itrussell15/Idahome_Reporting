@@ -12,8 +12,7 @@ class _CloserData(ReportableData):
     
     def __init__(self, name, raw_data, previous_weeks = 6):
         super().__init__(name, raw_data, previous_weeks)
-        
-        
+
         self.numSelfGens = self._getGroupedTotal("Self Gen", self._source)
         self.numSigns = self._getGroupedTotal("Signed", self._status)
         self.numLeads = len(self.leads) - self.numSelfGens
