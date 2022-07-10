@@ -102,9 +102,18 @@ class OfficeData(_CloserData):
         except:
             pass
         
+        output = pd.DataFrame()
         cols = ["Pitched", "Not Pitched", "Canceled", "No Show", "Signed", "Signed- Canceled", "DNQ", "No Dispo"]
-        everything = everything[cols]
-        return everything    
+        for i in cols:
+            try:
+                if output.empty:
+                    output = everything[i].copy()
+                else:
+                    output = pd.concat([output, everything[i]], axis = 1)
+            except:
+                pass
+
+        return output    
     
 if __name__ == "__main__":
-    pas
+    pass

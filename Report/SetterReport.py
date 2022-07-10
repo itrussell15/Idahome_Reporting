@@ -5,6 +5,9 @@ Created on Sat Jul  9 15:25:22 2022
 @author: Schmuck
 """
 
+import sys
+sys.path.append("../Data")
+
 from ReportTemplate import Report
 import pandas as pd
 import numpy as np
@@ -18,8 +21,16 @@ class _SetterReport(Report):
                          handler = data_handler,
                          data_path = data_path)
         
+    def KPIs(self, subject):
+        columns = ["Total Leads", "Lead-Pitched", "Lead-Signed",  "% No Show"]
+        data = [subject.numLeads, subject.pitchRatio, subject.closeRatio,  subject.cancelRatio]
+        data = ["{:.2f}%".format(i) for i in data]
+        data[0] = str(subject.numLeads)
+        final = [columns, data]
+        
+        cell_size = {"height": 6, "widths": [35, 35, 35, 35]}
+        self._createTable(final, "KPIs", cell_size = cell_size)
     
-
 class SetterIndividualReport(_SetterReport):
     
     def __init__(self, name, handler = None, path = None):
@@ -28,8 +39,10 @@ class SetterIndividualReport(_SetterReport):
         self._create_body(setter)
         
     def _create_body(self, setter):
-        self._customerTable(setter)
+        self.KPIs(setter)
         self.ln(10)
+        self._customerTable(setter)
+
     
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [65, 38]}
@@ -46,9 +59,11 @@ class SetterOfficeReport(_SetterReport):
         office = self._data.getSetterData()
         self._create_body(office)
         
-    def _create_body(self, setter):
-        self._customerTable(setter)
+    def _create_body(self, office):
+        self.KPIs(office)
         self.ln(10)
+        self._customerTable(office)
+        
         
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [65, 25, 60]}

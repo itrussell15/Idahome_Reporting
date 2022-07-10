@@ -5,6 +5,8 @@ Created on Fri Jun 10 22:57:51 2022
 @author: Schmuck
 """
 
+
+
 import pandas as pd
 import os, datetime
 import matplotlib.pyplot as plt
@@ -59,7 +61,8 @@ class DataHandler:
 
 if __name__ == "__main__":
     data = DataHandler(os.getcwd() + "/Data.xlsx")
-    out = data.getCloserData("Cole Newell")
-    setter = data.getSetterData()
+    out = data.getCloserData()
+    out.closerLeadStatus()
+    # setter = data.getSetterData()
     
     
