@@ -41,7 +41,7 @@ class _CloserReport(Report):
             temp[i] = temp[i].apply(lambda x: "{}".format(x))
         
         totals = [str(i) for i in totals]
-        totals.extend(["-", "-", "-"])
+        totals.extend("{:.2f}".format(i) for i in [subject.pitchRatio, subject.closeRatio, subject.closeRatioTotal])
         temp.loc["Totals"] = totals
             
         temp.reset_index(inplace = True)
