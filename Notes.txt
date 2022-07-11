@@ -5,5 +5,3 @@
 -Yes no if text in last appt
     - Add to closer and setters
     - Office and Indv
-
-- Make it so closers don't show up as setters

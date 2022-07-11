@@ -22,9 +22,11 @@ class ReportableData:
         if self.leads.empty:
             raise ValueError("{} has no leads".format(self.name))
         
+        self.leads = self.leads.fillna("Null")
+        
         self._source = self._groupedOutput("Lead Source")
         self._status = self._groupedOutput("Lead Status")
-        
+
         # Can drop all the duplicates
         # self.duplicated = self.leads[self.leads.duplicated("Customer")]
         # self.leads = self.leads.drop_duplicates(subset = "Customer", keep = "first").copy()

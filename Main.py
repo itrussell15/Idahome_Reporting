@@ -25,7 +25,7 @@ for i in data.closers:
             print("Closer Report Created for {}".format(i))
     except Exception as e:
         if str(e) != "{} has no leads".format(i):
-            print(str(e).upper())
+            print("{} -- {}".format(i, str(e).upper()))
 
 setter_report = SetterOfficeReport(handler = data)
 setter_report.output()

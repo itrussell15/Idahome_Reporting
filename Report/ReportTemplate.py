@@ -14,6 +14,8 @@ from global_functions import resource_path, resource_base
 
 from fpdf import FPDF
 import datetime, os
+import pandas as pd
+import numpy as np
 
 class Report(FPDF):
     
@@ -87,6 +89,11 @@ class Report(FPDF):
                      header_size = 9,
                      bold_rows = []
                      ):
+        
+        if type(data) == pd.DataFrame:
+            data = data.fillna("Null").copy()
+            data = pd.DataFrame(np.vstack([data.columns, data])).values
+
         self.set_font(self._font, 'B', 15)
         self.cell(0, h = 10, txt = title, align = 'C')
         self.ln(10)

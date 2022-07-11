@@ -28,11 +28,13 @@ class DataHandler:
         self.closers = self._getClosers()
         self.setters = self._getSetters()
         
+    # Only used to get the names for all of the data, NOT the time period
     def _getClosers(self):
         return self._getUnique("Lead Owner")
     
+    # Only used to get the names for all of the data, NOT the time period
     def _getSetters(self):
-        return self._getUnique("Setter")
+        return list(set(self._getUnique("Setter")) - set(self.closers))
     
     def _getUnique(self, column):
         return self._df[column].unique()
@@ -46,18 +48,26 @@ class DataHandler:
             else:
                 raise KeyError("{} has no leads in this data".format(name))
         else:
-            return OfficeData(self._df.copy())
+            officeData = OfficeData(self._df.copy())
+            # Sets closers and setters for time period
+            self.closers = officeData.closers
+            self.setters = list(set(officeData.setters) - set(self.closers))
+            return officeData
         
     def getSetterData(self, name = None):
-        
         if name:
-            
             if name in self._getSetters():
                 setterData = self._df.loc[self._df["Setter"] == name].copy()
                 setterData.drop("Setter", axis = 1, inplace = True)
                 return SetterInvidualData(name, setterData)
+            else:
+                raise ValueError("Not a valid setter name")
         else:
-            return SetterOfficeData(self._df.copy())
+            officeData = SetterOfficeData(self._df.copy())
+            # Sets closers and setters for time period
+            self.closers = officeData.closers
+            self.setters = list(set(officeData.setters) - set(self.closers))
+            return officeData
 
 if __name__ == "__main__":
     data = DataHandler(os.getcwd() + "/Data.xlsx")

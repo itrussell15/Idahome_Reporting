@@ -58,6 +58,9 @@ class OfficeData(_CloserData):
     def __init__(self, data):
         super().__init__("Office", data)
         
+        self.setters = self.leads["Setter"].unique()
+        self.closers = self.leads["Lead Owner"].unique()
+        
     def closerLeadGeneration(self):
         everything = pd.DataFrame()
         for closer in self.leads["Lead Owner"].unique():

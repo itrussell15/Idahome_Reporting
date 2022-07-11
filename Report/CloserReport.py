@@ -5,7 +5,9 @@ Created on Sat Jul  9 14:53:39 2022
 @author: Schmuck
 """
 
-from ReportTemplate import Report
+import sys
+
+from Report.ReportTemplate import Report
 import pandas as pd
 import numpy as np
 import os
@@ -46,8 +48,8 @@ class _CloserReport(Report):
             
         temp.reset_index(inplace = True)
         
-        bulk = pd.DataFrame(np.vstack([temp.columns, temp]))
-        self._createTable(bulk.values, "Sources", cell_size, bold_rows = [len(temp)])
+        # bulk = pd.DataFrame(np.vstack([temp.columns, temp]))
+        self._createTable(temp, "Sources", cell_size, bold_rows = [len(temp)])
 
 class IndividualReport(_CloserReport):
     
@@ -66,7 +68,7 @@ class IndividualReport(_CloserReport):
         
         pull_values = ["Customer", "Lead Source", "Lead Status"]
         customers = subject.leads[pull_values].fillna("Null")
-        customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
+        # customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
         self._createTable(customers, "Leads", cell_size)
         
 class OfficeReport(_CloserReport):
@@ -100,7 +102,6 @@ class OfficeReport(_CloserReport):
         widths = [16 for _ in range(len(data.columns))]
         widths[0] = 35
         cell_size = {"height": 6, "widths": widths}
-        data = pd.DataFrame(np.vstack([data.columns, data])).values
         
         self._createTable(data, "Lead Source by Rep", cell_size, header_size=6, bold_rows = [len(data)-1])
         
@@ -117,7 +118,6 @@ class OfficeReport(_CloserReport):
         widths = [20 for _ in range(len(data.columns))]
         widths[0] = 35
         cell_size = {"height": 6, "widths": widths}
-        data = pd.DataFrame(np.vstack([data.columns, data])).values
         
         self._createTable(data, "Lead Status by Rep", cell_size, header_size = 5, bold_rows = [len(data)-1, len(data)-2])
         
@@ -127,7 +127,7 @@ class OfficeReport(_CloserReport):
         pull_values = ["Customer", "Lead Source", "Lead Status", "Lead Owner"]
         customers = subject.leads[pull_values].fillna("Null")
         customers.sort_values(by = "Lead Owner", ascending = True, inplace = True)
-        customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
+
         self._createTable(customers, "Leads", cell_size)
         
 if __name__ == "__main__":
