@@ -30,6 +30,10 @@ class _CloserReport(Report):
 
     # Migrate this to DataHandler
     def _createSourceMatrix(self, subject):
+        print(len(subject.leads))
+        print(len(subject.leads[subject.leads["Lead Status"] == "Pitched"]))
+        print(len(subject.leads[subject.leads["Lead Status"] == "Signed"]))
+        print(len(subject.leads[subject.leads["Lead Status"] == "Signed- Canceled"]))
         cell_size = {"height": 6, "widths": [40, 20, 20, 20, 28, 28, 28]}
         
         headers = ["Source"]
@@ -103,7 +107,7 @@ class OfficeReport(_CloserReport):
         widths[0] = 35
         cell_size = {"height": 6, "widths": widths}
         
-        self._createTable(data, "Lead Source by Rep", cell_size, header_size=6, bold_rows = [len(data)-1])
+        self._createTable(data, "Lead Source by Rep", cell_size, header_size=6, bold_rows = [len(data)])
         
     def _LeadStatusMatrix(self, subject):
         # Get data as single numbers and into strings
@@ -119,7 +123,7 @@ class OfficeReport(_CloserReport):
         widths[0] = 35
         cell_size = {"height": 6, "widths": widths}
         
-        self._createTable(data, "Lead Status by Rep", cell_size, header_size = 5, bold_rows = [len(data)-1, len(data)-2])
+        self._createTable(data, "Lead Status by Rep", cell_size, header_size = 5, bold_rows = [len(data), len(data)-1])
         
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [65, 38, 30, 40]}
@@ -127,6 +131,7 @@ class OfficeReport(_CloserReport):
         pull_values = ["Customer", "Lead Source", "Lead Status", "Lead Owner"]
         customers = subject.leads[pull_values].fillna("Null")
         customers.sort_values(by = "Lead Owner", ascending = True, inplace = True)
+        customers.replace(to_replace = "Signed- Canceled", value = "Sign-Cncl", inplace = True)
 
         self._createTable(customers, "Leads", cell_size)
         

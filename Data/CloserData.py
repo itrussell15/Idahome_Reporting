@@ -15,13 +15,16 @@ class _CloserData(ReportableData):
 
         self.numSelfGens = self._getGroupedTotal("Self Gen", self._source)
         self.numSigns = self._getGroupedTotal("Signed", self._status)
-        self.numLeads = len(self.leads) - self.numSelfGens
+
+        self.numLeads = len(self.leads)
         self.numPitched = self._getPitched()
         
         self.closeRatio = self._potentialDivisionError(self.numSigns, self.numPitched)
         self.closeRatioTotal = self._potentialDivisionError(self.numSigns, self.numLeads)
         self.pitchRatio = self._potentialDivisionError(self.numPitched, self.numLeads)
         self.pullThroughRatio = self._potentialDivisionError(self.numSigns, (self.numSigns + self._getGroupedTotal("Signed- Canceled", self._status)))
+        
+        
         
         self.finalTable = self._finalTable()
         

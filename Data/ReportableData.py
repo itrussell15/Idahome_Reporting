@@ -24,6 +24,8 @@ class ReportableData:
         
         self.leads = self.leads.fillna("Null")
         
+        
+        
         self._source = self._groupedOutput("Lead Source")
         self._status = self._groupedOutput("Lead Status")
 
@@ -48,8 +50,10 @@ class ReportableData:
     # Handles potential ZeroDivisionErrors while running the rep
     @staticmethod
     def _potentialDivisionError(num, denom, percentage = True):
+        
         try:
             if percentage:
+                # print("{} / {} = {}".format(num, denom, num/denom))
                 return 100 * (num/denom)
             else:
                 return num/denom
@@ -65,7 +69,7 @@ class ReportableData:
     # Gets all sits, which includes multiple disposition categories
     def _getPitchedLeads(self, source_leads):
         everything = pd.DataFrame()
-        for i in ["Signed", "Singed- Canceled", "Pitched"]:
+        for i in ["Signed", "Signed- Canceled", "Pitched"]:
             try:
                 to_add = source_leads[source_leads["Lead Status"] == i]
                 everything = pd.concat([everything, to_add])

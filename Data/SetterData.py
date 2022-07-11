@@ -13,6 +13,8 @@ class _SetterData(ReportableData):
     def __init__(self, name, raw_data, previous_weeks = 6):
         super().__init__(name, raw_data, previous_weeks)
         
+        
+        
         self.numLeads = len(self.leads)
     
         self.numSigns = self._getGroupedTotal("Signed", self._status)
@@ -46,6 +48,7 @@ class SetterOfficeData(_SetterData):
         self.setters = self.leads["Setter"].unique()
         self.closers = self.leads["Lead Owner"].unique()
         self.leads = self.leads[~self.leads.isin(self.closers)]
+        self.leads = self.leads.dropna(subset = ["Setter"])
         self.leads["Setter"] = self.leads["Setter"].apply(self.cleanNames)
  
     def cleanNames(self, x, length = 18):

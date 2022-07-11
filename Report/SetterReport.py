@@ -82,7 +82,7 @@ class SetterOfficeReport(_SetterReport):
 if __name__ == "__main__":
     import os
     path = os.path.dirname(os.getcwd()) + "/Data/Data.xlsx"
-    report = SetterIndividualReport("Owen Viano", path = path)
-    # report = SetterOfficeReport(path = path)
+    # report = SetterIndividualReport("Owen Viano", path = path)
+    report = SetterOfficeReport(path = path)
     report.output()
     
