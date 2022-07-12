@@ -6,8 +6,7 @@ Created on Sat Jun 11 00:07:17 2022
 """
 
 import sys
-# sys.path.append("../Data")
-sys.path.append("..")
+# sys.path.append("..")
 
 from Data.DataHandler import DataHandler
 from global_functions import resource_path, resource_base

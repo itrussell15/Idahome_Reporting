@@ -5,15 +5,15 @@ Created on Fri Jun 10 22:57:51 2022
 @author: Schmuck
 """
 
-
+import sys
 
 import pandas as pd
 import os, datetime
 import matplotlib.pyplot as plt
 import matplotlib
 
-from CloserData import InvidualData, OfficeData
-from SetterData import SetterInvidualData, SetterOfficeData
+from Data.CloserData import InvidualData, OfficeData
+from Data.SetterData import SetterInvidualData, SetterOfficeData
 
 class DataHandler:
 

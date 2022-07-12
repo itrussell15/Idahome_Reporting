@@ -30,10 +30,6 @@ class _CloserReport(Report):
 
     # Migrate this to DataHandler
     def _createSourceMatrix(self, subject):
-        print(len(subject.leads))
-        print(len(subject.leads[subject.leads["Lead Status"] == "Pitched"]))
-        print(len(subject.leads[subject.leads["Lead Status"] == "Signed"]))
-        print(len(subject.leads[subject.leads["Lead Status"] == "Signed- Canceled"]))
         cell_size = {"height": 6, "widths": [40, 20, 20, 20, 28, 28, 28]}
         
         headers = ["Source"]

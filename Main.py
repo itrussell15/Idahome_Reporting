@@ -7,9 +7,12 @@ Created on Sat Jun 11 18:56:46 2022
 
 import sys
 
+sys.path.append("Data")
+sys.path.append("")
+
 from Report.CloserReport import IndividualReport, OfficeReport
 from Report.SetterReport import SetterIndividualReport, SetterOfficeReport
-from DataHandler import DataHandler
+from Data.DataHandler import DataHandler
 
 data = DataHandler("Data/Data.xlsx")
 

@@ -6,7 +6,6 @@ Created on Sat Jul  9 15:25:22 2022
 """
 
 import sys
-sys.path.append("../Data")
 
 from Report.ReportTemplate import Report
 import pandas as pd

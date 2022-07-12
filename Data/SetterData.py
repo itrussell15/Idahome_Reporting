@@ -5,7 +5,7 @@ Created on Sat Jul  9 14:49:52 2022
 @author: Schmuck
 """
 
-from ReportableData import ReportableData
+from Data.ReportableData import ReportableData
 import numpy as np
 
 class _SetterData(ReportableData):
