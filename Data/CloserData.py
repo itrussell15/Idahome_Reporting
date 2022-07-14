@@ -10,8 +10,8 @@ from ReportableData import ReportableData
 
 class _CloserData(ReportableData):
     
-    def __init__(self, name, raw_data, previous_weeks):
-        super().__init__(name, raw_data, previous_weeks)
+    def __init__(self, name, raw_data):
+        super().__init__(name, raw_data)
 
         self.numSelfGens = self._getGroupedTotal("Self Gen", self._source)
         self.numSigns = self._getGroupedTotal("Signed", self._status)
@@ -35,11 +35,12 @@ class _CloserData(ReportableData):
     def _finalTable(self):
         
         sources = list(self._source.index)
+        print(self._source)
         output = []
         for i in sources:
             
-            source_leads = self.leads[self.leads["Lead Source"] == i]
-            signed_leads = source_leads[source_leads["Lead Status"] == "Signed"]
+            source_leads = self.leads[self.leads["lead_source"] == i]
+            signed_leads = source_leads[source_leads["lead_status"] == "Signed"]
             pitched_leads = self._getPitchedLeads(source_leads)
             output.append({"Source": i, "Leads": len(source_leads), "Pitched": len(pitched_leads), "Signs": len(signed_leads)})
             
@@ -61,16 +62,16 @@ class OfficeData(_CloserData):
     def __init__(self, data):
         super().__init__("Office", data)
         
-        self.setters = self.leads["Setter"].unique()
-        self.closers = self.leads["Lead Owner"].unique()
+        self.setters = self.leads["setter"].unique()
+        self.closers = self.leads["owner"].unique()
         
         print(self.leads)
         
     def closerLeadGeneration(self):
         everything = pd.DataFrame()
-        for closer in self.leads["Lead Owner"].unique():
+        for closer in self.leads["owner"].unique():
             # if closer not in ["Enerflo Admin", "No Owner"]:
-            closerData = self.leads[self.leads["Lead Owner"] == closer].groupby("Lead Source")["ID"].count()
+            closerData = self.leads[self.leads["owner"] == closer].groupby("lead_source")["name"].count()
             closerData.name = closer
             everything = pd.concat([everything, closerData], axis = 1)
             
@@ -93,9 +94,9 @@ class OfficeData(_CloserData):
     
     def closerLeadStatus(self):
         everything = pd.DataFrame()
-        for closer in self.leads["Lead Owner"].unique():
+        for closer in self.leads["owner"].unique():
             if closer not in ["Enerflo Admin", "No Owner"]:
-                closerData = self.leads[self.leads["Lead Owner"] == closer].groupby("Lead Status")["ID"].count()
+                closerData = self.leads[self.leads["owner"] == closer].groupby("lead_status")["name"].count()
                 closerData.name = closer
                 everything = pd.concat([everything, closerData], axis = 1)
         

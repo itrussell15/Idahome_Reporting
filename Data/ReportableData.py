@@ -10,14 +10,15 @@ import pandas as pd
 
 class ReportableData:
 
-    def __init__(self, name, raw_data, previous_weeks):
+    def __init__(self, name, raw_data):
         self.name = name
+        self.leads = raw_data
         
-        if previous_weeks:
-            today = datetime.datetime.today()
-            self.leads = raw_data[raw_data["Added"] >= today - datetime.timedelta(weeks = previous_weeks)]
-        else:
-            self.leads = raw_data
+        # if previous_weeks:
+        #     today = datetime.datetime.today()
+        #     self.leads = raw_data[raw_data["Added"] >= today - datetime.timedelta(weeks = previous_weeks)]
+        # else:
+        #     self.leads = raw_data
         
         if self.leads.empty:
             raise ValueError("{} has no leads".format(self.name))
@@ -26,15 +27,15 @@ class ReportableData:
         
         
         
-        self._source = self._groupedOutput("Lead Source")
-        self._status = self._groupedOutput("Lead Status")
+        self._source = self._groupedOutput("lead_source")
+        self._status = self._groupedOutput("lead_status")
 
         # Can drop all the duplicates
         # self.duplicated = self.leads[self.leads.duplicated("Customer")]
         # self.leads = self.leads.drop_duplicates(subset = "Customer", keep = "first").copy()
 
     def _groupedOutput(self, column):
-        output = self.leads.groupby(column).count()["ID"]
+        output = self.leads.groupby(column).count()["name"]
         output.rename(self.name, inplace = True)
         return output
     
@@ -71,7 +72,7 @@ class ReportableData:
         everything = pd.DataFrame()
         for i in ["Signed", "Signed- Canceled", "Pitched"]:
             try:
-                to_add = source_leads[source_leads["Lead Status"] == i]
+                to_add = source_leads[source_leads["lead_status"] == i]
                 everything = pd.concat([everything, to_add])
             except AttributeError:
                 print("No Attribute {}".format(i))

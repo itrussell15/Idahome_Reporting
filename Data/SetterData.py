@@ -4,14 +4,17 @@ Created on Sat Jul  9 14:49:52 2022
 
 @author: Schmuck
 """
-
-from Data.ReportableData import ReportableData
+if __name__ != "__main__":
+    from ReportableData import ReportableData
+else:    
+    from Data.ReportableData import ReportableData
+    
 import numpy as np
 
 class _SetterData(ReportableData):
     
-    def __init__(self, name, raw_data, previous_weeks):
-        super().__init__(name, raw_data, previous_weeks)
+    def __init__(self, name, raw_data):
+        super().__init__(name, raw_data)
         
         self.numLeads = len(self.leads)
     
@@ -25,7 +28,8 @@ class _SetterData(ReportableData):
         self.closeRatio = self._potentialDivisionError(self.numSigns, self.numLeads)
         self.cancelRatio = self._potentialDivisionError(self.numNoShow, self.numLeads)
         
-        self.leads["Next Appt"] = self.leads["Next Appointment"].apply(self.scrapeForAppt)
+        # Fix this with wrapper
+        # self.leads["Next Appt"] = self.leads["Next Appointment"].apply(self.scrapeForAppt)
 
     def scrapeForAppt(self, x):
         if x != "Null":
@@ -41,13 +45,13 @@ class SetterOfficeData(_SetterData):
 
     def __init__(self, data):
         super().__init__("Office", data)
-        self.leads = self.leads[self.leads["Setter"] != "No Setter"]
+        self.leads = self.leads[self.leads["setter"] != "No Setter"]
         
-        self.setters = self.leads["Setter"].unique()
-        self.closers = self.leads["Lead Owner"].unique()
+        self.setters = self.leads["setter"].unique()
+        self.closers = self.leads["owner"].unique()
         self.leads = self.leads[~self.leads.isin(self.closers)]
-        self.leads = self.leads.dropna(subset = ["Setter"])
-        self.leads["Setter"] = self.leads["Setter"].apply(self.cleanNames)
+        self.leads = self.leads.dropna(subset = ["setter"])
+        self.leads["setter"] = self.leads["setter"].apply(self.cleanNames)
  
     def cleanNames(self, x, length = 18):
         return str(x) if len(str(x)) < length else "{}..".format(x[:length-1].strip())

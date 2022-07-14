@@ -48,9 +48,10 @@ class EnerfloWrapper:
 
     
     # Get customers 
-    def getCustomers(self, pageSize = 400):
+    def getCustomers(self, pageSize, previous_weeks = 6):
         
         url = self._getURL(self._endpoints["GET"]["all_customers"])
+        date_cutoff = datetime.date.today() - datetime.timedelta(weeks = 6, days = 1)
 
         # Get the number of data points to collect for next time.
         # numLeads = requests.get(url, headers = self._headers).json()["dataCount"]
@@ -63,7 +64,7 @@ class EnerfloWrapper:
             numPages += 1
         
         # print(numPages)
-        # TODO Start at the end of all the pages and move backwards rather than forward until we get dates that are within our date range that we want.
+        df = pd.DataFrame()
         for i in range(numPages, 0, -1):
             print("Requesting Page -{}-".format(i))
             params = {"pageSize": pageSize, "page": i}
@@ -72,19 +73,51 @@ class EnerfloWrapper:
             print("Received Page -{}-, {} Remaining Requests".format(i, remainingReqs))
             # Info needed Name, Lead Source, Lead Status, Setter, Lead Owner, Next Appointment, Added
             pageLeads = self.extractLeadData(page.json()["data"])
+            df = pd.concat([df, pageLeads])
+            if df["created"].min().to_pydatetime().date() < date_cutoff:
+                break
+            
+        return df.sort_values(by = "created", ascending = False)
             
     def extractLeadData(self, pageData):
-        # df = pd.DataFrame()
-        data = []
+        leads = []
         for lead in pageData:
-            leadData = {
-                "name": f"""{lead["first_name"]} {lead["last_name"]}""",
-                "email": lead["email"],
-                "phone": lead["mobile"],
-                "address": f"""{lead["address"]} {lead["city"]}, {lead["state"]} {lead["zip"]}"""
-                        }
-            print(leadData)
+            thisLead = self.Lead(lead)
+            leads.append(vars(thisLead))
+        df = pd.DataFrame.from_records(leads)
+        return df
+ 
+    class Lead:
+        
+        def __init__(self, leadData):
+            self.name = leadData["fullName"]
+            self.email = leadData["email"]
+            self.phone = leadData["mobile"]
+            self.address = f"""{leadData["address"]} {leadData["city"]}, {leadData["state"]} {leadData["zip"]}"""
+            self.latLong = (leadData["lat"], leadData["lng"])
+            self.lead_source = leadData["lead_source"]
+            self.lead_status = leadData["status_name"] if leadData["status_name"] else None
+            self.owner = '{} {}'.format(leadData["owner"]["first_name"], leadData["owner"]["last_name"]) if "owner" in list(leadData.keys()) else None
+            self.setter = '{} {}'.format(leadData["setter"]["first_name"], leadData["setter"]["last_name"]) if "setter" in list(leadData.keys()) else None
+            self.notes = leadData["customer_notes"] if leadData["customer_notes"] else None
+            self.created = datetime.datetime.fromisoformat(leadData["created"])
+            
+            if leadData["futureAppointments"]:
+                self.nextAppointment = Appointment(leadData["futureAppointments"])
+            else:
+                self.nextAppointment = None
+            self.portal = leadData["customer_portal_url"]
+            
+            
+class Appointment:
+    
+    def __init__(self, data):
+        data = data[list(data.keys())[0]]
+        self.title = data["name"]
+        self.status = data["status"]
+        self.time = datetime.datetime.fromisoformat(data["start_time_local"])
+            
 if __name__ == "__main__":
     wrapper = EnerfloWrapper()
     
-    wrapper.getCustomers()
+    customers = wrapper.getCustomers()

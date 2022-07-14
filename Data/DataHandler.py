@@ -7,44 +7,55 @@ Created on Fri Jun 10 22:57:51 2022
 
 import sys
 
+
 import pandas as pd
 import os, datetime
 import matplotlib.pyplot as plt
 import matplotlib
 
-from Data.CloserData import InvidualData, OfficeData
-from Data.SetterData import SetterInvidualData, SetterOfficeData
+if __name__ == "__main__":
+    from CloserData import InvidualData, OfficeData
+    from SetterData import SetterInvidualData, SetterOfficeData
+    from EnerfloWrapper import EnerfloWrapper
+else:
+    from Data.CloserData import InvidualData, OfficeData
+    from Data.SetterData import SetterInvidualData, SetterOfficeData
+    from Data.EnerfloWrapper import EnerfloWrapper
 
 class DataHandler:
 
-    def __init__(self, data_path):
-        self._df = pd.read_excel(data_path)
-        self._df["Lead Status"].fillna("No Dispo", inplace = True)
-        self._df["Lead Source"].fillna("No Lead Source", inplace = True)
-        self._df["Lead Owner"].fillna("No Owner", inplace = True)
-        self._df["Setter"].fillna("No Setter", inplace = True)
-        self._df["Office"].fillna("No Office", inplace = True)
+    def __init__(self, previous_weeks = 6):
+        # self._df = pd.read_excel(data_path)
+        wrapper = EnerfloWrapper()
+        self._df = wrapper.getCustomers(pageSize = 100, previous_weeks = previous_weeks)
         
-        self.closers = self._getClosers()
-        self.setters = self._getSetters()
+        # self._df["lead_status"].fillna("No Dispo", inplace = True)
+        # self._df["lead_source"].fillna("No Lead Source", inplace = True)
+        # self._df["owner"].fillna("No Owner", inplace = True)
+        # self._df["setter"].fillna("No Setter", inplace = True)
+        
+        # self.closers = self._getClosers()
+        # self.setters = self._getSetters()
+        
+        print(self._df)
         
     # Only used to get the names for all of the data, NOT the time period
     def _getClosers(self):
-        return self._getUnique("Lead Owner")
+        return self._getUnique("owner")
     
     # Only used to get the names for all of the data, NOT the time period
     def _getSetters(self):
-        return list(set(self._getUnique("Setter")) - set(self.closers))
+        return list(set(self._getUnique("setter")) - set(self.closers))
     
     def _getUnique(self, column):
         return self._df[column].unique()
     
-    def getCloserData(self, name = None, previous_weeks = 6):
+    def getCloserData(self, name = None):
         if name:
             if name in self._getClosers():
-                closerData = self._df.loc[self._df["Lead Owner"] == name].copy()
-                closerData.drop("Lead Owner", axis = 1, inplace = True)
-                return InvidualData(name, closerData, previous_weeks)
+                closerData = self._df.loc[self._df["owner"] == name].copy()
+                closerData.drop("owner", axis = 1, inplace = True)
+                return InvidualData(name, closerData)
             else:
                 raise KeyError("{} has no leads in this data".format(name))
         else:
@@ -54,12 +65,12 @@ class DataHandler:
             self.setters = list(set(officeData.setters) - set(self.closers))
             return officeData
         
-    def getSetterData(self, name = None, previous_weeks = 6):
+    def getSetterData(self, name = None):
         if name:
             if name in self._getSetters():
-                setterData = self._df.loc[self._df["Setter"] == name].copy()
-                setterData.drop("Setter", axis = 1, inplace = True)
-                return SetterInvidualData(name, setterData, previous_weeks)
+                setterData = self._df.loc[self._df["setter"] == name].copy()
+                setterData.drop("setter", axis = 1, inplace = True)
+                return SetterInvidualData(name, setterData)
             else:
                 raise ValueError("Not a valid setter name")
         else:
@@ -70,7 +81,9 @@ class DataHandler:
             return officeData
 
 if __name__ == "__main__":
-    data = DataHandler(os.getcwd() + "/Data.xlsx")
+    # sys.path.append("Data")
+    
+    data = DataHandler(previous_weeks = 1)
     # out = data.getCloserData()
     # out.closerLeadStatus()
     setter = data.getSetterData()
