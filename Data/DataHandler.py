@@ -39,12 +39,12 @@ class DataHandler:
     def _getUnique(self, column):
         return self._df[column].unique()
     
-    def getCloserData(self, name = None):
+    def getCloserData(self, name = None, previous_weeks = 6):
         if name:
             if name in self._getClosers():
                 closerData = self._df.loc[self._df["Lead Owner"] == name].copy()
                 closerData.drop("Lead Owner", axis = 1, inplace = True)
-                return InvidualData(name, closerData)
+                return InvidualData(name, closerData, previous_weeks)
             else:
                 raise KeyError("{} has no leads in this data".format(name))
         else:
@@ -54,12 +54,12 @@ class DataHandler:
             self.setters = list(set(officeData.setters) - set(self.closers))
             return officeData
         
-    def getSetterData(self, name = None):
+    def getSetterData(self, name = None, previous_weeks = 6):
         if name:
             if name in self._getSetters():
                 setterData = self._df.loc[self._df["Setter"] == name].copy()
                 setterData.drop("Setter", axis = 1, inplace = True)
-                return SetterInvidualData(name, setterData)
+                return SetterInvidualData(name, setterData, previous_weeks)
             else:
                 raise ValueError("Not a valid setter name")
         else:

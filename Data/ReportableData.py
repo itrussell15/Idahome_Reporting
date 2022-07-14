@@ -10,7 +10,7 @@ import pandas as pd
 
 class ReportableData:
 
-    def __init__(self, name, raw_data, previous_weeks = 6):
+    def __init__(self, name, raw_data, previous_weeks):
         self.name = name
         
         if previous_weeks:

@@ -10,7 +10,7 @@ from ReportableData import ReportableData
 
 class _CloserData(ReportableData):
     
-    def __init__(self, name, raw_data, previous_weeks = 6):
+    def __init__(self, name, raw_data, previous_weeks):
         super().__init__(name, raw_data, previous_weeks)
 
         self.numSelfGens = self._getGroupedTotal("Self Gen", self._source)

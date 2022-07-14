@@ -10,10 +10,8 @@ import numpy as np
 
 class _SetterData(ReportableData):
     
-    def __init__(self, name, raw_data, previous_weeks = 6):
+    def __init__(self, name, raw_data, previous_weeks):
         super().__init__(name, raw_data, previous_weeks)
-        
-        
         
         self.numLeads = len(self.leads)
     
