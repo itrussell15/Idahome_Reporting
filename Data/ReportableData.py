@@ -13,25 +13,38 @@ class ReportableData:
     # TODO Focus on getting this into a good spot before trying to pull reports.
     # Decide when to turn nans into a string or static value. 
 
-    def __init__(self, name, raw_data):
+    def __init__(self, name, raw_data, prepForReport):
         self.name = name
         self.leads = raw_data
-        
-        # if previous_weeks:
-        #     today = datetime.datetime.today()
-        #     self.leads = raw_data[raw_data["Added"] >= today - datetime.timedelta(weeks = previous_weeks)]
-        # else:
-        #     self.leads = raw_data
         
         if self.leads.empty:
             raise ValueError("{} has no leads".format(self.name))
         
         self._source = self._groupedOutput("lead_source")
         self._status = self._groupedOutput("lead_status")
-
-        # Can drop all the duplicates
-        # self.duplicated = self.leads[self.leads.duplicated("Customer")]
-        # self.leads = self.leads.drop_duplicates(subset = "Customer", keep = "first").copy()
+        
+        self.closers = self.leads["owner"].unique()
+        self.leads["setter"] = self.leads["setter"].apply(self.removeCloserAsSetter)
+        self.setters = self.leads["setter"].unique()
+        
+        if prepForReport:
+            self._reportPrep()
+            
+    def _reportPrep(self):
+        value_changes = {"name": "No Name",
+                         "email": "No Email",
+                         "lead_source": "No Source",
+                         "lead_status": "No Dispo",
+                         "notes": "-",
+                         "nextApptDetail": "-",
+                         "setter": "No Setter",
+                         "owner": "No Closer"}
+        
+        for i in list(value_changes.keys()):
+            if i in self.leads.columns:
+                self.leads[i].fillna(value_changes[i], inplace = True)
+            
+        self.leads["setter"] = self.leads["setter"].replace("Austin Anderson- Call Center", "Austin Anderson")
 
     def _groupedOutput(self, column):
         output = self.leads.groupby(column).count()["name"]
@@ -61,6 +74,9 @@ class ReportableData:
             return 0
         except:
             raise ValueError("Non ZeroDivisionError occured")
+
+    # Takes out closers from setters
+    removeCloserAsSetter = lambda self, x: x if x not in self.closers else None        
 
     # Only returns a number of pitched leads. See _getPitchedLeads for the DF with customer information
     def _getPitched(self):

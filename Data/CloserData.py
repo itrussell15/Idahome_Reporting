@@ -10,8 +10,8 @@ from ReportableData import ReportableData
 
 class _CloserData(ReportableData):
     
-    def __init__(self, name, raw_data):
-        super().__init__(name, raw_data)
+    def __init__(self, name, raw_data, prepForReport):
+        super().__init__(name, raw_data, prepForReport)
 
         self.numSelfGens = self._getGroupedTotal("Self Gen", self._source)
         self.numSigns = self._getGroupedTotal("Signed", self._status)
@@ -54,13 +54,13 @@ class _CloserData(ReportableData):
 
 class InvidualData(_CloserData):
 
-    def __init__(self, closer_name, data):
-        super().__init__(closer_name, data)
+    def __init__(self, closer_name, data, prepForReport):
+        super().__init__(closer_name, data, prepForReport)
 
 class OfficeData(_CloserData):
 
-    def __init__(self, data):
-        super().__init__("Office", data)
+    def __init__(self, data, prepForReport):
+        super().__init__("Office", data, prepForReport)
         
         self.setters = self.leads["setter"].unique()
         self.closers = self.leads["owner"].unique()

@@ -95,31 +95,36 @@ class EnerfloWrapper:
     class Lead:
         
         def __init__(self, leadData):
-            self.custID = leadData["id"]
-            self.name = leadData["fullName"] if leadData["fullName"] else None
-            self.email = leadData["email"]
-            self.phone = leadData["mobile"]
+            
+            self.custID = self.checkKey("id", leadData)
+            self.name = self.checkKey("fullName", leadData)
+            self.email = self.checkKey("email", leadData)
+            self.lead_source = self.checkKey("lead_source", leadData)
+            self.lead_status = self.checkKey("status_name", leadData)
+            self.notes = self.checkKey("customer_notes", leadData)
+            self.created = datetime.datetime.fromisoformat(self.checkKey("created", leadData))
+            self.portal = self.checkKey("customer_portal_url", leadData)
+            self.latLong = (self.checkKey("lat", leadData), self.checkKey("lng", leadData))
+            
             self.address = f"""{leadData["address"]} {leadData["city"]}, {leadData["state"]} {leadData["zip"]}"""
-            self.latLong = (leadData["lat"], leadData["lng"])
-            self.lead_source = leadData["lead_source"]
-            self.lead_status = leadData["status_name"] if leadData["status_name"] else None
             self.owner = "{} {}".format(leadData["owner"]["first_name"], leadData["owner"]["last_name"]) \
                 if "owner" in leadData.keys() else None                
             self.setter = "{} {}".format(leadData["setter"]["first_name"], leadData["setter"]["last_name"]) \
                 if "setter" in leadData.keys() else None     
-            self.notes = leadData["customer_notes"] if leadData["customer_notes"] else None
-            self.created = datetime.datetime.fromisoformat(leadData["created"])
-            
+
+            self.nexApptDate = None
+            self.nextApptDetail = None
+
             if leadData["futureAppointments"]:
                 appt = leadData["futureAppointments"][list(leadData["futureAppointments"].keys())[0]]
-                self.nexApptDate =  datetime.datetime.fromisoformat(appt["start_time_local"])
-                self.nextApptDetail = appt["name"]
-            else:
-                self.nextAppointment = None
-                self.nextApptDetail = None
-                
-            self.portal = leadData["customer_portal_url"]
+                self.nexApptDate =  datetime.datetime.fromisoformat(self.checkKey("start_time_local", appt))
+                self.nextApptDetail = self.checkKey("name", appt)   
             
+        def checkKey(self, key, data):
+            if data[key]:
+                return data[key]
+            else:
+                return None
             
 class Appointment:
     

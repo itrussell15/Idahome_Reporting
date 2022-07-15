@@ -13,8 +13,8 @@ import numpy as np
 
 class _SetterData(ReportableData):
     
-    def __init__(self, name, raw_data):
-        super().__init__(name, raw_data)
+    def __init__(self, name, raw_data, prepForReport):
+        super().__init__(name, raw_data, prepForReport)
         
         self.numLeads = len(self.leads)       
         self.leads = self.leads.dropna(subset = ["setter"])
@@ -28,25 +28,20 @@ class _SetterData(ReportableData):
         self.closeRatio = self._potentialDivisionError(self.numSigns, self.numLeads)
         self.cancelRatio = self._potentialDivisionError(self.numNoShow, self.numLeads)
         
-
-        
-        # Fix this with wrapper
-        # self.leads["Next Appt"] = self.leads["Next Appointment"].apply(self.scrapeForAppt)
-
     def scrapeForAppt(self, x):
         if x != "Null":
             return " ".join((str(x).split(" ")[:-1]))
                 
 class SetterInvidualData(_SetterData):
 
-    def __init__(self, setter_name, data):
-        super().__init__(setter_name, data)
+    def __init__(self, setter_name, data, prepForReport):
+        super().__init__(setter_name, data, prepForReport)
         setterData.drop("setter", axis = 1, inplace = True)
         
 class SetterOfficeData(_SetterData):
 
-    def __init__(self, data):
-        super().__init__("Office", data)
+    def __init__(self, data, prepForReport):
+        super().__init__("Office", data, prepForReport)
         
         self.setters = self.leads["setter"].unique()
         self.closers = self.leads["owner"].unique()

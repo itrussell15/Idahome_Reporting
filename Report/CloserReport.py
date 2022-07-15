@@ -55,7 +55,7 @@ class IndividualReport(_CloserReport):
     
     def __init__(self, closer_name, handler = None, path = None):
         super().__init__(closer_name, data_handler = handler, data_path = path)
-        closer = self._data.getCloserData(closer_name)
+        closer = self._data.getCloserData(closer_name, for )
         self.create_body(closer)    
         
     def create_body(self, closer):

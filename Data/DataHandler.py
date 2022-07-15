@@ -21,6 +21,9 @@ if __name__ == "__main__":
     from CloserData import InvidualData, OfficeData
     from SetterData import SetterInvidualData, SetterOfficeData
     from EnerfloWrapper import EnerfloWrapper
+    
+    # TODO Remove this later
+    from ReportableData import ReportableData
 else:
     from Data.CloserData import InvidualData, OfficeData
     from Data.SetterData import SetterInvidualData, SetterOfficeData
@@ -53,43 +56,43 @@ class DataHandler:
     def _getUnique(self, column):
         return self._df[column].unique()
     
-    def getCloserData(self, name = None):
+    def getReportableData(self):
+        return ReportableData("Test", self._df, prepForReport = True)
+    
+    def getCloserData(self, name = None, prepForReport = True):
         if name:
             if name in self._getClosers():
                 closerData = self._df.loc[self._df["owner"] == name].copy()
                 closerData.drop("owner", axis = 1, inplace = True)
-                return InvidualData(name, closerData)
+                return InvidualData(name, closerData, prepForReport)
             else:
                 raise KeyError("{} has no leads in this data".format(name))
         else:
-            officeData = OfficeData(self._df.copy())
-            # Sets closers and setters for time period
-            self.closers = officeData.closers
-            self.setters = list(set(officeData.setters) - set(self.closers))
+            officeData = OfficeData(self._df.copy(), prepForReport)
             return officeData
         
-    def getSetterData(self, name = None):
+    def getSetterData(self, name = None, prepForReport = True):
         if name:
             if name in self._getSetters():
                 setterData = self._df.loc[self._df["setter"] == name].copy()
                 
-                return SetterInvidualData(name, setterData)
+                return SetterInvidualData(name, setterData, prepForReport)
             else:
                 raise ValueError("Not a valid setter name")
         else:
-            officeData = SetterOfficeData(self._df.copy())
-            # Sets closers and setters for time period
-            self.closers = officeData.closers
-            self.setters = list(set(officeData.setters) - set(self.closers))
+            officeData = SetterOfficeData(self._df.copy(), prepForReport)
             return officeData
 
 if __name__ == "__main__":
     
     data = DataHandler(previous_weeks = 1)
-    closer = data.getCloserData()
-    setter = data.getSetterData()
-    print(closer.finalTable)
+    test = data.getReportableData()
+    # closer = data.getCloserData()
+    # setter = data.getSetterData()
+    # print(closer.finalTable)
     # print(closer.leads)
     # print(setter.leads)
+    
+    print(test.leads.head(15))
     
     
