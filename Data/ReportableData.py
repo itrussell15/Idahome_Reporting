@@ -9,6 +9,9 @@ import datetime
 import pandas as pd
 
 class ReportableData:
+    
+    # TODO Focus on getting this into a good spot before trying to pull reports.
+    # Decide when to turn nans into a string or static value. 
 
     def __init__(self, name, raw_data):
         self.name = name

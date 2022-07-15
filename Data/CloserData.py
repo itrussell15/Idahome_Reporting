@@ -34,10 +34,11 @@ class _CloserData(ReportableData):
     # Shows the conversion efficiency of various lead methods
     def _finalTable(self):
         
+        print(self._source)
+        
         sources = list(self._source.index)
         output = []
         for i in sources:
-            
             source_leads = self.leads[self.leads["lead_source"] == i]
             signed_leads = source_leads[source_leads["lead_status"] == "Signed"]
             pitched_leads = self._getPitchedLeads(source_leads)
@@ -63,8 +64,6 @@ class OfficeData(_CloserData):
         
         self.setters = self.leads["setter"].unique()
         self.closers = self.leads["owner"].unique()
-        
-        print(self.leads)
         
     def closerLeadGeneration(self):
         everything = pd.DataFrame()

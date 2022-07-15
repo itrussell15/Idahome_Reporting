@@ -66,7 +66,7 @@ class IndividualReport(_CloserReport):
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [65, 38, 40]}
         
-        pull_values = ["Customer", "Lead Source", "Lead Status"]
+        pull_values = ["name", "lead_source", "lead_status"]
         customers = subject.leads[pull_values].fillna("Null")
         # customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
         self._createTable(customers, "Leads", cell_size)
@@ -102,7 +102,6 @@ class OfficeReport(_CloserReport):
         widths = [16 for _ in range(len(data.columns))]
         widths[0] = 35
         cell_size = {"height": 6, "widths": widths}
-        
         self._createTable(data, "Lead Source by Rep", cell_size, header_size=6, bold_rows = [len(data)])
         
     def _LeadStatusMatrix(self, subject):
@@ -124,14 +123,15 @@ class OfficeReport(_CloserReport):
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [65, 38, 30, 40]}
         
-        pull_values = ["Customer", "Lead Source", "Lead Status", "Lead Owner"]
+        pull_values = ["name", "lead_source", "lead_status", "owner"]
         customers = subject.leads[pull_values].fillna("Null")
-        customers.sort_values(by = "Lead Owner", ascending = True, inplace = True)
+        customers.sort_values(by = "owner", ascending = True, inplace = True)
         customers.replace(to_replace = "Signed- Canceled", value = "Sign-Cncl", inplace = True)
 
         self._createTable(customers, "Leads", cell_size)
         
 if __name__ == "__main__":
+    
     path = os.path.dirname(os.getcwd()) + "/Data/Data.xlsx"
     # print(path)
     # report = IndividualReport("Zach Trussell", path = path)

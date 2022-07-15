@@ -9,6 +9,8 @@ import requests
 import datetime
 import pandas as pd
 
+from global_functions import resource_path, resource_base
+
 class EnerfloWrapper:
     
     def __init__(self):
@@ -22,7 +24,8 @@ class EnerfloWrapper:
         self.requestCount = 0
         
     def _loadToken(self):
-        with open("Secret.txt", "r") as f:
+        # TODO wrap this with resource path
+        with open(resource_path("Data/Secret.txt"), "r") as f:
             data = f.readlines()[0]
         return data
 
@@ -75,7 +78,10 @@ class EnerfloWrapper:
             df = pd.concat([df, pageLeads])
             if df["created"].min().to_pydatetime().date() < date_cutoff:
                 break
-            
+        df.set_index("custID", inplace = True)
+        
+        # Add setter and closer names found in the data for time period
+        
         return df.sort_values(by = "created", ascending = False)
             
     def extractLeadData(self, pageData):
@@ -89,7 +95,8 @@ class EnerfloWrapper:
     class Lead:
         
         def __init__(self, leadData):
-            self.name = leadData["fullName"]
+            self.custID = leadData["id"]
+            self.name = leadData["fullName"] if leadData["fullName"] else None
             self.email = leadData["email"]
             self.phone = leadData["mobile"]
             self.address = f"""{leadData["address"]} {leadData["city"]}, {leadData["state"]} {leadData["zip"]}"""

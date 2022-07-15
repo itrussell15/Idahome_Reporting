@@ -13,6 +13,10 @@ import os, datetime
 import matplotlib.pyplot as plt
 import matplotlib
 
+# pd.set_option('display.max_rows', 500)
+# pd.set_option('display.max_columns', 100)
+# pd.set_option('display.width', 300)
+
 if __name__ == "__main__":
     from CloserData import InvidualData, OfficeData
     from SetterData import SetterInvidualData, SetterOfficeData
@@ -68,7 +72,7 @@ class DataHandler:
         if name:
             if name in self._getSetters():
                 setterData = self._df.loc[self._df["setter"] == name].copy()
-                setterData.drop("setter", axis = 1, inplace = True)
+                
                 return SetterInvidualData(name, setterData)
             else:
                 raise ValueError("Not a valid setter name")
@@ -80,11 +84,12 @@ class DataHandler:
             return officeData
 
 if __name__ == "__main__":
-    # sys.path.append("Data")
     
     data = DataHandler(previous_weeks = 1)
-    out = data.getCloserData()
-    # out.closerLeadStatus()
-    # setter = data.getSetterData()
+    closer = data.getCloserData()
+    setter = data.getSetterData()
+    print(closer.finalTable)
+    # print(closer.leads)
+    # print(setter.leads)
     
     

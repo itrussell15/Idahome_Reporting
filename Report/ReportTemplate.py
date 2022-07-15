@@ -90,7 +90,7 @@ class Report(FPDF):
                      ):
         
         if type(data) == pd.DataFrame:
-            data = data.fillna("Null").copy()
+            data = data.fillna("Null").copy().astype(str)
             data = pd.DataFrame(np.vstack([data.columns, data])).values
 
         self.set_font(self._font, 'B', 15)
