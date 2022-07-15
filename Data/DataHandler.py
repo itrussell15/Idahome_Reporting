@@ -37,7 +37,6 @@ class DataHandler:
         # self.closers = self._getClosers()
         # self.setters = self._getSetters()
         
-        print(self._df)
         
     # Only used to get the names for all of the data, NOT the time period
     def _getClosers(self):
@@ -84,8 +83,8 @@ if __name__ == "__main__":
     # sys.path.append("Data")
     
     data = DataHandler(previous_weeks = 1)
-    # out = data.getCloserData()
+    out = data.getCloserData()
     # out.closerLeadStatus()
-    setter = data.getSetterData()
+    # setter = data.getSetterData()
     
     

@@ -23,10 +23,6 @@ class ReportableData:
         if self.leads.empty:
             raise ValueError("{} has no leads".format(self.name))
         
-        self.leads = self.leads.fillna("Null")
-        
-        
-        
         self._source = self._groupedOutput("lead_source")
         self._status = self._groupedOutput("lead_status")
 

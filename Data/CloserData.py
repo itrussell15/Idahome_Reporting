@@ -35,7 +35,6 @@ class _CloserData(ReportableData):
     def _finalTable(self):
         
         sources = list(self._source.index)
-        print(self._source)
         output = []
         for i in sources:
             
