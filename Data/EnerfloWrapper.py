@@ -5,6 +5,8 @@ Created on Wed Jul 13 22:45:21 2022
 @author: Schmuck
 """
 
+import sys
+
 import requests
 import datetime
 import pandas as pd
@@ -55,9 +57,9 @@ class EnerfloWrapper:
         
         url = self._getURL(self._endpoints["GET"]["all_customers"])
         date_cutoff = datetime.date.today() - datetime.timedelta(weeks = 6, days = 1)
+        # Print the time period of the date collection
 
         # Get the number of data points to collect for next time.
-        # numLeads = requests.get(url, headers = self._headers).json()["dataCount"]
         r = self._get(url)
         numLeads = r["dataCount"]
         # Get the number of pages we need to run through to get all the leads
@@ -117,7 +119,7 @@ class EnerfloWrapper:
 
             if leadData["futureAppointments"]:
                 appt = leadData["futureAppointments"][list(leadData["futureAppointments"].keys())[0]]
-                self.nexApptDate =  datetime.datetime.fromisoformat(self.checkKey("start_time_local", appt))
+                self.nextApptDate =  datetime.datetime.fromisoformat(self.checkKey("start_time_local", appt))
                 self.nextApptDetail = self.checkKey("name", appt)   
             
         def checkKey(self, key, data):

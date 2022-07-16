@@ -24,18 +24,13 @@ class _CloserData(ReportableData):
         self.pitchRatio = self._potentialDivisionError(self.numPitched, self.numLeads)
         self.pullThroughRatio = self._potentialDivisionError(self.numSigns, (self.numSigns + self._getGroupedTotal("Signed- Canceled", self._status)))
         
-        
-        
         self.finalTable = self._finalTable()
         
     def __repr__(self):
         return self.leads
 
     # Shows the conversion efficiency of various lead methods
-    def _finalTable(self):
-        
-        print(self._source)
-        
+    def _finalTable(self):       
         sources = list(self._source.index)
         output = []
         for i in sources:
@@ -56,6 +51,7 @@ class InvidualData(_CloserData):
 
     def __init__(self, closer_name, data, prepForReport):
         super().__init__(closer_name, data, prepForReport)
+        self.leads.drop("owner", axis = 1, inplace = True)
 
 class OfficeData(_CloserData):
 
@@ -73,15 +69,17 @@ class OfficeData(_CloserData):
             closerData.name = closer
             everything = pd.concat([everything, closerData], axis = 1)
             
+        try:
+            everything.drop("Enerflo Admin", axis = 0, inplace = True)
+        except:
+            pass
+            
         everything = everything.transpose()
         everything.fillna(0.0, inplace = True)
         everything["Last 6 Wks"] = everything.sum(axis = 1)
         everything.sort_values(by = "Last 6 Wks", ascending = False, inplace = True)
         
-        try:
-            everything.drop("Enerflo Admin", axis = 0, inplace = True)
-        except:
-            pass
+        
 
         # Bring Last 6 weeks to the left
         cols = everything.columns.tolist()

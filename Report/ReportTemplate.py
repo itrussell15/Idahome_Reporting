@@ -18,10 +18,8 @@ import numpy as np
 
 class Report(FPDF):
     
-    def __init__(self, title, report_type, handler, data_path, fig_path = "/assets/temp"):
+    def __init__(self, title, report_type, data_handler, fig_path = "/assets/temp"):
         super().__init__()
-        if not data_path and not handler:
-            raise ValueError("Either data_path or handler should be passed in")
         self.WIDTH = 210
         self.HEIGHT = 297
         self._report_type = report_type
@@ -30,10 +28,10 @@ class Report(FPDF):
         self._fig_path = resource_path(fig_path)
         self._epw = self.w - self.l_margin
         
-        if handler:
-            self._data = handler
+        if data_handler:
+            self._data = data_handler
         else:
-            self._data = DataHandler(data_path)
+            self._data = DataHandler()
         self._cleanFigureFolder(fig_path)
         
         self.add_page()

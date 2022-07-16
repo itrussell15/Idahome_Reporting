@@ -14,11 +14,8 @@ import os
 
 class _CloserReport(Report):
     
-    def __init__(self, title, data_handler = None, data_path = None):
-        super().__init__(title = title,
-                         report_type = "Closer",
-                         handler = data_handler,
-                         data_path = data_path)
+    def __init__(self, title, data_handler):
+        super().__init__(title = title, report_type = "Closer", data_handler = data_handler)
     
     # Soon be deprecated
     def _create_KPI_table(self, subject):
@@ -28,7 +25,6 @@ class _CloserReport(Report):
         
         self._createTable(data, "KPIs", cell_size, cell_text_size = 12)
 
-    # Migrate this to DataHandler
     def _createSourceMatrix(self, subject):
         cell_size = {"height": 6, "widths": [40, 20, 20, 20, 28, 28, 28]}
         
@@ -45,17 +41,15 @@ class _CloserReport(Report):
         totals = [str(i) for i in totals]
         totals.extend("{:.2f}".format(i) for i in [subject.pitchRatio, subject.closeRatio, subject.closeRatioTotal])
         temp.loc["Totals"] = totals
-            
         temp.reset_index(inplace = True)
         
-        # bulk = pd.DataFrame(np.vstack([temp.columns, temp]))
         self._createTable(temp, "Sources", cell_size, bold_rows = [len(temp)])
 
 class IndividualReport(_CloserReport):
     
-    def __init__(self, closer_name, handler = None, path = None):
-        super().__init__(closer_name, data_handler = handler, data_path = path)
-        closer = self._data.getCloserData(closer_name, for )
+    def __init__(self, closer_name, handler = None):
+        super().__init__(closer_name, data_handler = handler)
+        closer = self._data.getCloserData(closer_name)
         self.create_body(closer)    
         
     def create_body(self, closer):
@@ -68,13 +62,15 @@ class IndividualReport(_CloserReport):
         
         pull_values = ["name", "lead_source", "lead_status"]
         customers = subject.leads[pull_values].fillna("Null")
-        # customers = pd.DataFrame(np.vstack([customers.columns, customers])).values
+        
+        customers.columns = ["Customer", "Source", "Status"]
+        
         self._createTable(customers, "Leads", cell_size)
         
 class OfficeReport(_CloserReport):
     
-    def __init__(self, path = None, handler = None):
-        super().__init__("Idahome Solar", data_handler = handler, data_path = path)
+    def __init__(self, handler = None):
+        super().__init__("Idahome Solar", data_handler = handler)
         office = self._data.getCloserData()
         self.create_body(office)
         
@@ -97,7 +93,6 @@ class OfficeReport(_CloserReport):
         data.reset_index(inplace = True)
         data = data.rename(columns = {'index':'Closer',
                                       "Website/Called In": "Website",
-                                      "No Lead Source": "No Source", 
                                       "Sales Rabbit": "Sales Rbt"})
         widths = [16 for _ in range(len(data.columns))]
         widths[0] = 35
@@ -113,12 +108,12 @@ class OfficeReport(_CloserReport):
         data = data.astype(int).astype(str) 
         data.loc["Percentages"] = ["{:.2f}%".format(100*i) for i in for_totals/sum(for_totals)]
         data.reset_index(inplace = True)
-        data = data.rename(columns = {"index": "Closer"})
+        data = data.rename(columns = {"index": "Closer", "Signed- Canceled": "Sign-Cncl"})
         widths = [20 for _ in range(len(data.columns))]
         widths[0] = 35
         cell_size = {"height": 6, "widths": widths}
         
-        self._createTable(data, "Lead Status by Rep", cell_size, header_size = 5, bold_rows = [len(data), len(data)-1])
+        self._createTable(data, "Lead Status by Rep", cell_size, header_size = 7, bold_rows = [len(data), len(data)-1])
         
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [65, 38, 30, 40]}
@@ -127,6 +122,8 @@ class OfficeReport(_CloserReport):
         customers = subject.leads[pull_values].fillna("Null")
         customers.sort_values(by = "owner", ascending = True, inplace = True)
         customers.replace(to_replace = "Signed- Canceled", value = "Sign-Cncl", inplace = True)
+        
+        customers.columns = ["Customer", "Source", "Status", "Owner"]
 
         self._createTable(customers, "Leads", cell_size)
         
@@ -134,6 +131,6 @@ if __name__ == "__main__":
     
     path = os.path.dirname(os.getcwd()) + "/Data/Data.xlsx"
     # print(path)
-    # report = IndividualReport("Zach Trussell", path = path)
-    report = OfficeReport(path = path)
+    # report = IndividualReport("Zach Trussell")
+    report = OfficeReport()
     report.output()

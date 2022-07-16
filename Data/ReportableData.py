@@ -10,9 +10,6 @@ import pandas as pd
 
 class ReportableData:
     
-    # TODO Focus on getting this into a good spot before trying to pull reports.
-    # Decide when to turn nans into a string or static value. 
-
     def __init__(self, name, raw_data, prepForReport):
         self.name = name
         self.leads = raw_data
@@ -27,10 +24,31 @@ class ReportableData:
         self.leads["setter"] = self.leads["setter"].apply(self.removeCloserAsSetter)
         self.setters = self.leads["setter"].unique()
         
+        if "Enerflo Admin" in self.closers:
+            self.leads = self.leads[self.leads["owner"] != "Enerflo Admin"]
+        
+        leads = self.leads.copy()
+        leads["setter"] = leads["setter"].replace("Austin Anderson- Call Center", "Austin Anderson")
+        self.leads = leads
+               
         if prepForReport:
             self._reportPrep()
             
     def _reportPrep(self):
+        
+        toDate = lambda x: x.strftime('%m-%d-%Y')
+        
+        def toDatetime(x):
+            if type(x) != type(pd.NaT):
+                stamp = x.strftime('%m-%d-%Y %I%p').split(" ")
+                return " ".join([stamp[0], stamp[1].strip("0")])
+            else:
+                None
+        
+        
+        self.leads["created"] = self.leads["created"].apply(toDate)
+        self.leads["nextApptDate"] = self.leads["nextApptDate"].apply(toDatetime)
+        
         value_changes = {"name": "No Name",
                          "email": "No Email",
                          "lead_source": "No Source",
@@ -38,13 +56,17 @@ class ReportableData:
                          "notes": "-",
                          "nextApptDetail": "-",
                          "setter": "No Setter",
-                         "owner": "No Closer"}
+                         "owner": "No Closer",
+                         "nextApptDate": "-"}
+        
+        leads = self.leads.copy()
         
         for i in list(value_changes.keys()):
-            if i in self.leads.columns:
-                self.leads[i].fillna(value_changes[i], inplace = True)
-            
-        self.leads["setter"] = self.leads["setter"].replace("Austin Anderson- Call Center", "Austin Anderson")
+
+            if i in leads.columns:
+                leads[i].fillna(value_changes[i], inplace = True)
+                
+        self.leads = leads
 
     def _groupedOutput(self, column):
         output = self.leads.groupby(column).count()["name"]

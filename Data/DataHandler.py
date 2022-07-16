@@ -32,24 +32,17 @@ else:
 class DataHandler:
 
     def __init__(self, previous_weeks = 6):
-        # self._df = pd.read_excel(data_path)
         wrapper = EnerfloWrapper()
         self._df = wrapper.getCustomers(pageSize = 100, previous_weeks = previous_weeks)
-        
-        # self._df["lead_status"].fillna("No Dispo", inplace = True)
-        # self._df["lead_source"].fillna("No Lead Source", inplace = True)
-        # self._df["owner"].fillna("No Owner", inplace = True)
-        # self._df["setter"].fillna("No Setter", inplace = True)
-        
-        # self.closers = self._getClosers()
-        # self.setters = self._getSetters()
-        
-        
-    # Only used to get the names for all of the data, NOT the time period
+               
+        self.closers = self._getClosers()
+        self.setters = self._getSetters()
+    
+    # Finds unique closers in the df
     def _getClosers(self):
         return self._getUnique("owner")
     
-    # Only used to get the names for all of the data, NOT the time period
+    # Finds setters closers in the df
     def _getSetters(self):
         return list(set(self._getUnique("setter")) - set(self.closers))
     
@@ -63,7 +56,7 @@ class DataHandler:
         if name:
             if name in self._getClosers():
                 closerData = self._df.loc[self._df["owner"] == name].copy()
-                closerData.drop("owner", axis = 1, inplace = True)
+                # closerData.drop("owner", axis = 1, inplace = True)
                 return InvidualData(name, closerData, prepForReport)
             else:
                 raise KeyError("{} has no leads in this data".format(name))
@@ -86,13 +79,10 @@ class DataHandler:
 if __name__ == "__main__":
     
     data = DataHandler(previous_weeks = 1)
-    test = data.getReportableData()
-    # closer = data.getCloserData()
-    # setter = data.getSetterData()
-    # print(closer.finalTable)
-    # print(closer.leads)
-    # print(setter.leads)
-    
-    print(test.leads.head(15))
+    # test = data.getReportableData()
+    # closer = data.getCloserData("Zach Trussell")
+    setter = data.getSetterData()
+
+    print(setter.leads.head(15))
     
     
