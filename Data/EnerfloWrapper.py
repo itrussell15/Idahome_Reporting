@@ -44,8 +44,10 @@ class EnerfloWrapper:
             r.raise_for_status()
             
         except requests.exceptions.HTTPError as err:
+            logging.error(err)
             raise requests.exceptions.HTTPError(err)
         except Exception as err:
+            logging.error(err)
             raise err
         
         if as_json:
@@ -83,8 +85,9 @@ class EnerfloWrapper:
             if df["created"].min().to_pydatetime().date() < date_cutoff:
                 break
         logging.info("{} requests made".format(self.requestCount))
+        logging.info("{} requests remaining after complete".format(remainingReqs))
         df.set_index("custID", inplace = True)
-          
+ 
         return df.sort_values(by = "created", ascending = False)
             
     def extractLeadData(self, pageData):

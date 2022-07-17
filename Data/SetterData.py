@@ -28,8 +28,8 @@ class _SetterData(ReportableData):
         self.numNoShow = self._getGroupedTotal("No Show", self._status) + \
             self._getGroupedTotal("Canceled", self._status)
         
-        print(self.numLeads)
-        print(self.numPitched)
+        # print(self.numLeads)
+        # print(self.numPitched)
         
         self.pitchRatio = self._potentialDivisionError(self.numPitched, self.numLeads)
         self.closeRatio = self._potentialDivisionError(self.numSigns, self.numLeads)

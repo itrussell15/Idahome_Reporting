@@ -42,7 +42,7 @@ class ReportableData:
         toDate = lambda x: x.strftime('%m-%d-%Y')
         
         def toDatetime(x):
-            if type(x) != type(pd.NaT):
+            if x is not pd.NaT:
                 stamp = x.strftime('%m-%d-%Y %I%p').split(" ")
                 return " ".join([stamp[0], stamp[1].strip("0")])
             else:
@@ -64,7 +64,6 @@ class ReportableData:
         leads = self.leads.copy()
         
         for i in list(value_changes.keys()):
-
             if i in leads.columns:
                 leads[i].fillna(value_changes[i], inplace = True)
                 

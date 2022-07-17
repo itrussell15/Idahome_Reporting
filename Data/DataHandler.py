@@ -22,8 +22,6 @@ if __name__ == "__main__":
     from CloserData import InvidualData, OfficeData
     from SetterData import SetterInvidualData, SetterOfficeData
     from EnerfloWrapper import EnerfloWrapper
-    # TODO Remove this later
-    from ReportableData import ReportableData
 else:
     from Data.CloserData import InvidualData, OfficeData
     from Data.SetterData import SetterInvidualData, SetterOfficeData
@@ -41,6 +39,8 @@ class DataHandler:
                
         self.closers = self._getClosers()
         self.setters = self._getSetters()
+        
+        logging.info("{} Closers and {} Setter found in this data".format(len(self.closers), len(self.setters)))
     
     def setupLogging(self):
         log_format = '%(levelname)s--%(filename)s-line %(lineno)s: %(message)s'
@@ -74,6 +74,7 @@ class DataHandler:
                 # closerData.drop("owner", axis = 1, inplace = True)
                 return InvidualData(name, closerData, prepForReport)
             else:
+                logging.warn("Closer {} has no leads in data".format(name))
                 raise KeyError("{} has no leads in this data".format(name))
         else:
             officeData = OfficeData(self._df.copy(), prepForReport)
@@ -83,9 +84,9 @@ class DataHandler:
         if name:
             if name in self._getSetters():
                 setterData = self._df.loc[self._df["setter"] == name].copy()
-                
                 return SetterInvidualData(name, setterData, prepForReport)
             else:
+                logging.warn("Setter {} has no leads in this data".format(name))
                 raise ValueError("Not a valid setter name")
         else:
             officeData = SetterOfficeData(self._df.copy(), prepForReport)
@@ -95,7 +96,7 @@ if __name__ == "__main__":
     data = DataHandler(previous_weeks = 1)
     # test = data.getReportableData()
     # closer = data.getCloserData("Zach Trussell")
-    # setter = data.getSetterData()
+    setter = data.getSetterData()
 
     # print(setter.leads.head(15))
     

@@ -17,7 +17,6 @@ class _CloserReport(Report):
     
     def __init__(self, title, data_handler):
         super().__init__(title = title, report_type = "Closer", data_handler = data_handler)
-        
         logging.info("Closer Report Creation initiated for {}".format(title))
     
     # Soon be deprecated

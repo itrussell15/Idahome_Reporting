@@ -66,10 +66,13 @@ class Report(FPDF):
         self.set_x(-self.l_margin-5)
         self.cell(10, h = 8, txt = "Page {}".format(self.page_no()), align = "R")
         
-    def output(self):
-        thisTime = datetime.datetime.now()   
-        
-        self.out_path = resource_path("output/{}_{} Report_{}.pdf".format(self._title, self._report_type, thisTime.strftime("%m-%d-%Y")))
+    # Add ability to seperate into different folders.
+    # ie have a setter and a closer folder
+    # IDEA to have office reports in output folder and then closers and setters in folders
+    def output(self, folder = None):
+        thisTime = datetime.datetime.now()  
+        if not folder:
+            self.out_path = resource_path("output/{}_{} Report_{}.pdf".format(self._title, self._report_type, thisTime.strftime("%m-%d-%Y")))
         super().output(self.out_path, "F")
         
     def _cleanFigureFolder(self, path):
