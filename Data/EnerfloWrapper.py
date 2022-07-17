@@ -12,6 +12,7 @@ import datetime
 import pandas as pd
 import logging
 
+sys.path.append("..")
 
 from global_functions import resource_path, resource_base
 
@@ -73,12 +74,13 @@ class EnerfloWrapper:
         logging.info("{} pages available at {} leads per page".format(numPages, pageSize))
         
         df = pd.DataFrame()
+        print("Requesting Data from Enerflo")
         for i in range(numPages, 0, -1):
-            print("Requesting Page -{}-".format(i))
+            # print("Requesting Page -{}-".format(i))
             params = {"pageSize": pageSize, "page": i}
             page = self._get(url, params, as_json = False)
             remainingReqs = page.headers["X-RateLimit-Remaining"]
-            print("Received Page -{}-, {} Remaining Requests".format(i, remainingReqs))
+            # print("Received Page -{}-, {} Remaining Requests".format(i, remainingReqs))
             # Info needed Name, Lead Source, Lead Status, Setter, Lead Owner, Next Appointment, Added
             pageLeads = self.extractLeadData(page.json()["data"])
             df = pd.concat([df, pageLeads])

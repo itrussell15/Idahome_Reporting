@@ -8,7 +8,7 @@ Created on Sat Jun 11 00:07:17 2022
 import sys
 # sys.path.append("..")
 
-from Data.DataHandler import DataHandler
+from DataHandler import DataHandler
 from global_functions import resource_path, resource_base
 
 from fpdf import FPDF
@@ -32,7 +32,7 @@ class Report(FPDF):
             self._data = data_handler
         else:
             self._data = DataHandler()
-        self._cleanFigureFolder(fig_path)
+        # self._cleanFigureFolder(fig_path)
         
         self.add_page()
         

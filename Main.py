@@ -10,12 +10,13 @@ import sys
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-# sys.path.append("Data")
-# sys.path.append("")
+sys.path.append("Data")
+sys.path.append("Report")
 
-from Report.CloserReport import IndividualReport, OfficeReport
-from Report.SetterReport import SetterIndividualReport, SetterOfficeReport
-from Data.DataHandler import DataHandler
+
+from CloserReport import IndividualReport, OfficeReport
+from SetterReport import SetterIndividualReport, SetterOfficeReport
+from DataHandler import DataHandler
 import logging
 
 data = DataHandler()

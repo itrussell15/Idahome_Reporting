@@ -1,14 +1,11 @@
 #Folders
-
 dist/
 output/
 assets/
 build/
 __pycache__/
 build_archive/
-
-#Include these from excluded places
-!assets/logo.png
+release/
 
 #Files
 Data/Data.xlsx
@@ -23,3 +20,8 @@ IdahomeHours.ods
 *.orig
 Data/Secret.txt
 *.log
+
+#Include these from excluded places
+!assets/logo.png
+!Release.spec
+

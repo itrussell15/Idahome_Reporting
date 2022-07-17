@@ -7,7 +7,7 @@ Created on Sat Jul  9 15:25:22 2022
 
 import sys
 
-from Report.ReportTemplate import Report
+from ReportTemplate import Report
 import pandas as pd
 import numpy as np
 import logging

@@ -13,6 +13,7 @@ import os, datetime
 import matplotlib.pyplot as plt
 import matplotlib
 import logging
+from global_functions import resource_path
 
 # pd.set_option('display.max_rows', 500)
 # pd.set_option('display.max_columns', 100)
@@ -22,10 +23,11 @@ if __name__ == "__main__":
     from CloserData import InvidualData, OfficeData
     from SetterData import SetterInvidualData, SetterOfficeData
     from EnerfloWrapper import EnerfloWrapper
+    from ReportableData import ReportableData
 else:
-    from Data.CloserData import InvidualData, OfficeData
-    from Data.SetterData import SetterInvidualData, SetterOfficeData
-    from Data.EnerfloWrapper import EnerfloWrapper
+    from CloserData import InvidualData, OfficeData
+    from SetterData import SetterInvidualData, SetterOfficeData
+    from EnerfloWrapper import EnerfloWrapper
 
 class DataHandler:
 
@@ -47,7 +49,7 @@ class DataHandler:
         logging.basicConfig(
             level = logging.INFO,
             format = log_format,
-            filename = "master.log",
+            filename = resource_path("master.log"),
             force = True,
             filemode = "w"
             )
