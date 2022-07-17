@@ -12,6 +12,7 @@ import pandas as pd
 import os, datetime
 import matplotlib.pyplot as plt
 import matplotlib
+import logging
 
 # pd.set_option('display.max_rows', 500)
 # pd.set_option('display.max_columns', 100)
@@ -21,7 +22,6 @@ if __name__ == "__main__":
     from CloserData import InvidualData, OfficeData
     from SetterData import SetterInvidualData, SetterOfficeData
     from EnerfloWrapper import EnerfloWrapper
-    
     # TODO Remove this later
     from ReportableData import ReportableData
 else:
@@ -32,11 +32,26 @@ else:
 class DataHandler:
 
     def __init__(self, previous_weeks = 6):
+        
+        self.setupLogging()
+        logging.info("Program Started @ {}".format(datetime.datetime.now()))
+        
         wrapper = EnerfloWrapper()
-        self._df = wrapper.getCustomers(pageSize = 100, previous_weeks = previous_weeks)
+        self._df = wrapper.getCustomers(pageSize = 200, previous_weeks = previous_weeks)
                
         self.closers = self._getClosers()
         self.setters = self._getSetters()
+    
+    def setupLogging(self):
+        log_format = '%(levelname)s--%(filename)s-line %(lineno)s: %(message)s'
+        logging.basicConfig(
+            level = logging.INFO,
+            format = log_format,
+            filename = "master.log",
+            force = True,
+            filemode = "w"
+            )
+        logging.getLogger(__name__)
     
     # Finds unique closers in the df
     def _getClosers(self):
@@ -77,12 +92,11 @@ class DataHandler:
             return officeData
 
 if __name__ == "__main__":
-    
     data = DataHandler(previous_weeks = 1)
     # test = data.getReportableData()
     # closer = data.getCloserData("Zach Trussell")
-    setter = data.getSetterData()
+    # setter = data.getSetterData()
 
-    print(setter.leads.head(15))
+    # print(setter.leads.head(15))
     
     

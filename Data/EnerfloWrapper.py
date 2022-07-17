@@ -10,6 +10,8 @@ import sys
 import requests
 import datetime
 import pandas as pd
+import logging
+
 
 from global_functions import resource_path, resource_base
 
@@ -51,8 +53,7 @@ class EnerfloWrapper:
         else:
             return r
 
-    
-    # Get customers 
+    # Get customers
     def getCustomers(self, pageSize = 200, previous_weeks = 6):
         
         url = self._getURL(self._endpoints["GET"]["all_customers"])
@@ -67,6 +68,7 @@ class EnerfloWrapper:
         # If there is the division isn't spot on, then add an extra page
         if numLeads % pageSize != 0:
             numPages += 1
+        logging.info("{} pages available at {} leads per page".format(numPages, pageSize))
         
         df = pd.DataFrame()
         for i in range(numPages, 0, -1):
@@ -80,10 +82,9 @@ class EnerfloWrapper:
             df = pd.concat([df, pageLeads])
             if df["created"].min().to_pydatetime().date() < date_cutoff:
                 break
+        logging.info("{} requests made".format(self.requestCount))
         df.set_index("custID", inplace = True)
-        
-        # Add setter and closer names found in the data for time period
-        
+          
         return df.sort_values(by = "created", ascending = False)
             
     def extractLeadData(self, pageData):

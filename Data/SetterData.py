@@ -21,7 +21,6 @@ class _SetterData(ReportableData):
         if prepForReport:
             self._reportPrep()
         
-        
         self.numLeads = len(self.leads)
         self.numSigns = self._getGroupedTotal("Signed", self._status)
         self.numPitched = self._getPitched()

@@ -10,7 +10,7 @@ import sys
 from Report.ReportTemplate import Report
 import pandas as pd
 import numpy as np
-
+import logging
 
 class _SetterReport(Report):
     
@@ -18,6 +18,7 @@ class _SetterReport(Report):
         super().__init__(title = title,
                          report_type = "Setter",
                          data_handler = data_handler)
+        logging.info("Closer Report Creation initiated for {}".format(title))
         
     def KPIs(self, subject):
         columns = ["Total Leads", "Lead-Pitched",  "% No Show"]

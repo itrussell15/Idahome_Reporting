@@ -22,3 +22,4 @@ IdahomeHours.ods
 *.xlsx#
 *.orig
 Data/Secret.txt
+*.log

@@ -7,6 +7,7 @@ Created on Sat Jul  9 15:02:01 2022
 
 import datetime
 import pandas as pd
+import logging
 
 class ReportableData:
     
@@ -15,7 +16,9 @@ class ReportableData:
         self.leads = raw_data
         
         if self.leads.empty:
-            raise ValueError("{} has no leads".format(self.name))
+            message = "{} has no leads".format(self.name)
+            logging.debug(message)
+            raise ValueError(message)
         
         self._source = self._groupedOutput("lead_source")
         self._status = self._groupedOutput("lead_status")
@@ -44,7 +47,6 @@ class ReportableData:
                 return " ".join([stamp[0], stamp[1].strip("0")])
             else:
                 None
-        
         
         self.leads["created"] = self.leads["created"].apply(toDate)
         self.leads["nextApptDate"] = self.leads["nextApptDate"].apply(toDatetime)
@@ -83,8 +85,7 @@ class ReportableData:
             return 0        
         
     # Handles potential ZeroDivisionErrors while running the rep
-    @staticmethod
-    def _potentialDivisionError(num, denom, percentage = True):
+    def _potentialDivisionError(self, num, denom, percentage = True):
         
         try:
             if percentage:
@@ -93,6 +94,7 @@ class ReportableData:
             else:
                 return num/denom
         except ZeroDivisionError:
+            logging.warning("Division Error Avoided on {}".format(self.name))
             return 0
         except:
             raise ValueError("Non ZeroDivisionError occured")

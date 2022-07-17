@@ -13,8 +13,9 @@ sys.path.append("")
 from Report.CloserReport import IndividualReport, OfficeReport
 from Report.SetterReport import SetterIndividualReport, SetterOfficeReport
 from Data.DataHandler import DataHandler
+import logging
 
-data = DataHandler("Data/Data.xlsx")
+data = DataHandler()
 
 office_report = OfficeReport(handler = data)
 office_report.output()

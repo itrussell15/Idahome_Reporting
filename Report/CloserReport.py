@@ -11,11 +11,14 @@ from Report.ReportTemplate import Report
 import pandas as pd
 import numpy as np
 import os
+import logging
 
 class _CloserReport(Report):
     
     def __init__(self, title, data_handler):
         super().__init__(title = title, report_type = "Closer", data_handler = data_handler)
+        
+        logging.info("Closer Report Creation initiated for {}".format(title))
     
     # Soon be deprecated
     def _create_KPI_table(self, subject):
@@ -129,8 +132,6 @@ class OfficeReport(_CloserReport):
         
 if __name__ == "__main__":
     
-    path = os.path.dirname(os.getcwd()) + "/Data/Data.xlsx"
-    # print(path)
     # report = IndividualReport("Zach Trussell")
     report = OfficeReport()
     report.output()
