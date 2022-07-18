@@ -32,7 +32,7 @@ class Report(FPDF):
             self._data = data_handler
         else:
             self._data = DataHandler()
-        # self._cleanFigureFolder(fig_path)
+        self._cleanFigureFolder(fig_path)
         
         self.add_page()
         
@@ -87,9 +87,10 @@ class Report(FPDF):
                      title_size = 15, 
                      cell_text_size = 9,
                      header_size = 9,
-                     bold_rows = []
+                     bold_rows = [],
+                     column_links = None
                      ):
-        
+               
         if type(data) == pd.DataFrame:
             data = data.fillna("Null").copy().astype(str)
             data = pd.DataFrame(np.vstack([data.columns, data])).values
@@ -97,7 +98,6 @@ class Report(FPDF):
         self.set_font(self._font, 'B', 15)
         self.cell(0, h = 10, txt = title, align = 'C')
         self.ln(10)
-        # to_center = round((self.WIDTH  - (columns * cell_size[0]))/2)
         to_center = round((self.WIDTH - sum([i for i in cell_size["widths"]]))/2)
         self.x = to_center
         
@@ -120,7 +120,11 @@ class Report(FPDF):
             # Cells in row
             for o, (value, width) in enumerate(zip(row, cell_size["widths"])):
                 top = self.y
-                self.multi_cell(width, cell_size["height"], value, border = 1, align = "C")
+                if not column_links:
+                    self.cell(width, cell_size["height"], value, border = 1, align = "C")
+                else:
+                    if o == 
+                    self.cell(width, cell_size["height"], value, border = 1, align = "C", link = column_links[n])
                 self.x = sum([i for i in cell_size["widths"][:o + 1]]) + to_center
                 self.y = top
 

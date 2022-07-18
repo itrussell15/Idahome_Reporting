@@ -13,6 +13,8 @@ import os, datetime
 import matplotlib.pyplot as plt
 import matplotlib
 import logging
+
+# sys.path.append(os.path.dirname(os.getcwd()))
 from global_functions import resource_path
 
 # pd.set_option('display.max_rows', 500)
@@ -100,6 +102,6 @@ if __name__ == "__main__":
     # closer = data.getCloserData("Zach Trussell")
     setter = data.getSetterData()
 
-    # print(setter.leads.head(15))
+    print(setter.leads.head(15))
     
     

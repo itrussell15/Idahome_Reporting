@@ -33,10 +33,16 @@ class ReportableData:
         leads = self.leads.copy()
         leads["setter"] = leads["setter"].replace("Austin Anderson- Call Center", "Austin Anderson")
         self.leads = leads
-               
+        
+        self.leads["dashboard"] = self.leads.apply(self._createDashboard, axis = 1)
+
         if prepForReport:
             self._reportPrep()
-            
+    
+    @staticmethod
+    def _createDashboard(x):
+        return "https://enerflo.io/customer/edit/{}".format(x.name)
+    
     def _reportPrep(self):
         
         toDate = lambda x: x.strftime('%m-%d-%Y')

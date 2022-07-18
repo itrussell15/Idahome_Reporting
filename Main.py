@@ -10,9 +10,8 @@ import sys
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-sys.path.append("Data")
-sys.path.append("Report")
-
+# sys.path.append("Data")
+# sys.path.append("Report")
 
 from CloserReport import IndividualReport, OfficeReport
 from SetterReport import SetterIndividualReport, SetterOfficeReport

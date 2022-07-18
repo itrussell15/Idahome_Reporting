@@ -7,7 +7,7 @@ Created on Sat Jul  9 14:53:39 2022
 
 import sys
 
-from ReportTemplate import Report
+from Report.ReportTemplate import Report
 import pandas as pd
 import numpy as np
 import os
@@ -77,12 +77,12 @@ class OfficeReport(_CloserReport):
         self.create_body(office)
         
     def create_body(self, office):
-        self._createSourceMatrix(office)
-        self.ln(10)
-        self._LeadGenerationMatrix(office)
-        self.add_page()
-        self._LeadStatusMatrix(office)
-        self.ln(10)
+        # self._createSourceMatrix(office)
+        # self.ln(10)
+        # self._LeadGenerationMatrix(office)
+        # self.add_page()
+        # self._LeadStatusMatrix(office)
+        # self.ln(10)
         self._customerTable(office)
         
     def _LeadGenerationMatrix(self, subject):
@@ -126,8 +126,11 @@ class OfficeReport(_CloserReport):
         customers.replace(to_replace = "Signed- Canceled", value = "Sign-Cncl", inplace = True)
         
         customers.columns = ["Customer", "Source", "Status", "Owner"]
-
-        self._createTable(customers, "Leads", cell_size)
+        links = [str(i) for i in subject.leads["dashboard"].values]
+        links.insert(0, None)
+        print(links)
+        
+        self._createTable(customers, "Leads", cell_size, column_links = links)
         
 if __name__ == "__main__":
     

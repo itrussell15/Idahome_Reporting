@@ -29,7 +29,6 @@ class EnerfloWrapper:
         self.requestCount = 0
         
     def _loadToken(self):
-        # TODO wrap this with resource path
         with open(resource_path("Data/Secret.txt"), "r") as f:
             data = f.readlines()[0]
         return data
@@ -81,7 +80,6 @@ class EnerfloWrapper:
             page = self._get(url, params, as_json = False)
             remainingReqs = page.headers["X-RateLimit-Remaining"]
             # print("Received Page -{}-, {} Remaining Requests".format(i, remainingReqs))
-            # Info needed Name, Lead Source, Lead Status, Setter, Lead Owner, Next Appointment, Added
             pageLeads = self.extractLeadData(page.json()["data"])
             df = pd.concat([df, pageLeads])
             if df["created"].min().to_pydatetime().date() < date_cutoff:
