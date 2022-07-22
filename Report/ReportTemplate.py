@@ -120,11 +120,7 @@ class Report(FPDF):
             # Cells in row
             for o, (value, width) in enumerate(zip(row, cell_size["widths"])):
                 top = self.y
-                if not column_links:
-                    self.cell(width, cell_size["height"], value, border = 1, align = "C")
-                else:
-                    if o == 
-                    self.cell(width, cell_size["height"], value, border = 1, align = "C", link = column_links[n])
+                self.cell(width, cell_size["height"], value, border = 1, align = "C")
                 self.x = sum([i for i in cell_size["widths"][:o + 1]]) + to_center
                 self.y = top
 

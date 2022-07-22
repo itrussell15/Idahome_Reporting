@@ -128,7 +128,6 @@ class OfficeReport(_CloserReport):
         customers.columns = ["Customer", "Source", "Status", "Owner"]
         links = [str(i) for i in subject.leads["dashboard"].values]
         links.insert(0, None)
-        print(links)
         
         self._createTable(customers, "Leads", cell_size, column_links = links)
         
