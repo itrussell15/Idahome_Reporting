@@ -24,3 +24,9 @@ def resource_base():
     else:
         base_path = os.path.dirname(os.path.abspath(__file__))
     return base_path
+
+def checkKey(key, data):
+    if data[key]:
+        return data[key]
+    else:
+        return None

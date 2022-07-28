@@ -1,7 +1,1 @@
-*Setter Report
-
--Look into Sales Rabbit API
-
--Yes no if text in last appt
-    - Add to closer and setters
-    - Office and Indv
+*Install Report
