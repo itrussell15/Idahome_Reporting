@@ -5,13 +5,13 @@ Created on Sat Jul  9 14:49:52 2022
 @author: Schmuck
 """
 if __name__ != "__main__":
-    from ReportableData import ReportableData
+    from ReportableData import CustomerData
 else:    
-    from Data.ReportableData import ReportableData
+    from Data.ReportableData import CustomerData
     
 import numpy as np
 
-class _SetterData(ReportableData):
+class _SetterData(CustomerData):
     
     def __init__(self, name, raw_data, prepForReport):
         super().__init__(name, raw_data, False)

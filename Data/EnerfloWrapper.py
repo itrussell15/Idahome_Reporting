@@ -59,9 +59,10 @@ class EnerfloWrapper:
     # TODO Migrate this data collection to a generic function that gathers page data
     def getCustomers(self, previous_weeks = 6):
         
-        self._gatherAllPageData(self._endpoints["GET"]["all_customers"],
+        all_data = self._gatherAllPageData(self._endpoints["GET"]["all_customers"],
                                 self.Lead,
                                 previous_weeks)
+        print(all_data)
         
         # url = self._getURL(self._endpoints["GET"]["all_customers"])
 
@@ -105,6 +106,7 @@ class EnerfloWrapper:
         this_url = self._getURL(url)
         r = self._get(this_url)
         date_cutoff = datetime.date.today() - datetime.timedelta(weeks = previous_weeks, days = 1)
+        # date_cutoff = datetime.datetime(date_cutoff.year, date_cutoff.month, date_cutoff.day).replace(tzinfo = None)
         
         # Different queries have seen different key name. This will be the first key value in the response.
         r_keys = list(r.keys())
@@ -123,9 +125,22 @@ class EnerfloWrapper:
             page = self._get(this_url, params, as_json = False)
             rRemaining = page.headers["X-RateLimit-Remaining"]
             data = page.json()[r_keys[1]]
-            pageLeads = self._extractData(data, extractionObject)
-            print(pageLeads)            
+            pageLeads = self._extractData(data, extractionObject)       
             df = pd.concat([df, pageLeads])
+            
+            # print(type(df["created"].min().to_pydatetime().replace(tzinfo = None)))
+            # print(type(date_cutoff))
+            
+            if df["created"].min().to_pydatetime() < date_cutoff:
+                df = df[df['created'] < date_cutoff]
+                break
+            
+        print(df)
+        logging.info("{} requests made".format(self.requestCount))
+        logging.info("{} requests remaining after complete".format(rRemaining))
+        df.set_index("custID", inplace = True)
+        return df.sort_values(by = "created", ascending = True)
+        
 
 # %% Extraction Functions
     def _extractData(self, pageData, object_type):
@@ -149,7 +164,7 @@ class EnerfloWrapper:
         def checkSubkey(self, key, subset):
             if self.data[subset]:
                 subset = self.data[subset]
-                print(subset)
+                # print(subset)
                 if subset[key]:
                     return subset[key]
                 else:
@@ -181,10 +196,11 @@ class EnerfloWrapper:
             self.nexApptDate = None
             self.nextApptDetail = None
             
-            # TODO Fix this to grab appointment ID
             if self.checkKey("futureAppointments"):
-                self.nextApptDate =  datetime.datetime.fromisoformat(self.checkSubkey("start_time_local", "futureAppointments"))
-                self.nextApptDetail = self.checkSubkey("name", "futureAppointments")   
+                apptNum = list(leadData["futureAppointments"].keys())[0]
+                apptDetails = self.checkSubkey(apptNum, "futureAppointments")
+                self.nextApptDate = datetime.datetime.fromisoformat(apptDetails["start_time_local"])
+                self.nextApptDate = apptDetails["name"]
             
     class Install(Extraction):
         
@@ -195,18 +211,9 @@ class EnerfloWrapper:
             self.created = datetime.datetime.fromisoformat(self.checkKey("created_at"))
             self.status = self.checkKey("status_name")
             self.system_size = self.checkKey("system_size")
-            
-            # customerData = checkKey("customer")
-            # closerData = checkKey("agent_user")
-            
-            # if customerData:
-            #     self.customer = checkKey("name", customerData)
-            #     self.lead_source = checkKey("lead_source", customerData)
-            #     self.latLong = (checkKey("lat", customerData), checkKey("lng", customerData))
-                
-            # self.closer = checkKey("name", closerData) if closerData else None
-                
-    
+            self.system_offset = self.checkKey("system_offset")
+            self.closer = self.checkSubkey("name", "agent_user")
+            self.panel_count = self.checkKey("panel_count")
 
                     
     # class Appointment:

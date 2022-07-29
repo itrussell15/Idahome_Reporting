@@ -9,7 +9,7 @@ import datetime
 import pandas as pd
 import logging
 
-class ReportableData:
+class CustomerData:
     
     def __init__(self, name, raw_data, prepForReport):
         self.name = name
@@ -121,4 +121,12 @@ class ReportableData:
             except AttributeError:
                 print("No Attribute {}".format(i))
         return everything
+    
+class InstallData:
+    
+    def __init__(self, name, data):
+        self.name = name
+        self.installs = data
+    
+    
            

@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 import matplotlib
 import logging
 
-# sys.path.append(os.path.dirname(os.getcwd()))
 from global_functions import resource_path
 
 # pd.set_option('display.max_rows', 500)
@@ -25,7 +24,7 @@ if __name__ == "__main__":
     from CloserData import InvidualData, OfficeData
     from SetterData import SetterInvidualData, SetterOfficeData
     from EnerfloWrapper import EnerfloWrapper
-    from ReportableData import ReportableData
+    from ReportableData import CustomerData, InstallData
 else:
     from CloserData import InvidualData, OfficeData
     from SetterData import SetterInvidualData, SetterOfficeData
@@ -33,18 +32,13 @@ else:
 
 class DataHandler:
 
-    def __init__(self, previous_weeks = 6):
+    def __init__(self, previous_weeks = 6, page_size = 200):
         
         self.setupLogging()
         logging.info("Program Started @ {}".format(datetime.datetime.now()))
         
-        wrapper = EnerfloWrapper()
-        self._df = wrapper.getCustomers(pageSize = 200, previous_weeks = previous_weeks)
-               
-        self.closers = self._getClosers()
-        self.setters = self._getSetters()
-        
-        logging.info("{} Closers and {} Setter found in this data".format(len(self.closers), len(self.setters)))
+        self.wrapper = EnerfloWrapper(perPageRequest = page_size)
+        self.previous_weeks = previous_weeks
     
     def setupLogging(self):
         log_format = '%(levelname)s--%(filename)s-line %(lineno)s: %(message)s'
@@ -56,52 +50,72 @@ class DataHandler:
             filemode = "w"
             )
         logging.getLogger(__name__)
+
+# %% Private Calls
+
+    # # Finds unique closers in the df
+    # def _getClosers(self, df):
+    #     return self._getUnique("owner", df)
     
-    # Finds unique closers in the df
-    def _getClosers(self):
-        return self._getUnique("owner")
+    # # Finds setters closers in the df
+    # def _getSetters(self, df):
+    #     return list(set(self._getUnique("setter")) - set(self.closers))
     
-    # Finds setters closers in the df
-    def _getSetters(self):
-        return list(set(self._getUnique("setter")) - set(self.closers))
+    # def _getUnique(self, column, df):
+    #     return df[column].unique()
     
-    def _getUnique(self, column):
-        return self._df[column].unique()
+    def _queryForCustomers(self):
+        df = self.wrapper.getCustomers(previous_weeks = self.previous_weeks)
+        logging.info("Queried for Customers")
+        # self.closers = self._getClosers(df)
+        # self.setters = self._getSetters(df)
+        # logging.info("{} Closers and {} Setter found in this data".format(len(self.closers), len(self.setters)))
+        return df
     
+    # def _queryForInstalls(self):
+    #     df = self.wrapper.getInstalls(previous_weeks = self.previous_weeks)
+        
+    
+# %% CustomerData Pulls
+
     def getReportableData(self):
-        return ReportableData("Test", self._df, prepForReport = True)
+        df = self._queryForCustomers()
+        return CustomerData("Test", df, prepForReport = True)
     
     def getCloserData(self, name = None, prepForReport = True):
+        df = self._queryForCustomers()
         if name:
             if name in self._getClosers():
-                closerData = self._df.loc[self._df["owner"] == name].copy()
-                # closerData.drop("owner", axis = 1, inplace = True)
+                closerData = df.loc[df["owner"] == name].copy()
                 return InvidualData(name, closerData, prepForReport)
             else:
                 logging.warn("Closer {} has no leads in data".format(name))
                 raise KeyError("{} has no leads in this data".format(name))
         else:
-            officeData = OfficeData(self._df.copy(), prepForReport)
+            officeData = OfficeData(df.copy(), prepForReport)
             return officeData
         
     def getSetterData(self, name = None, prepForReport = True):
+        df = self._queryForCustomers()
         if name:
             if name in self._getSetters():
-                setterData = self._df.loc[self._df["setter"] == name].copy()
+                setterData = df.loc[df["setter"] == name].copy()
                 return SetterInvidualData(name, setterData, prepForReport)
             else:
                 logging.warn("Setter {} has no leads in this data".format(name))
                 raise ValueError("Not a valid setter name")
         else:
-            officeData = SetterOfficeData(self._df.copy(), prepForReport)
+            officeData = SetterOfficeData(df.copy(), prepForReport)
             return officeData
 
+# %% InstallData Pulls
+
+    # def getInstallData(self, name = None):        
+    #     return InstallData(self)
+
+# %% Main
 if __name__ == "__main__":
     data = DataHandler(previous_weeks = 1)
-    # test = data.getReportableData()
-    # closer = data.getCloserData("Zach Trussell")
-    setter = data.getSetterData()
-
-    print(setter.leads.head(15))
+    installs = data.getInstallData()
     
     

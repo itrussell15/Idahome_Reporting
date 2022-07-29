@@ -6,9 +6,9 @@ Created on Sat Jul  9 14:48:06 2022
 """
 
 import pandas as pd
-from ReportableData import ReportableData
+from ReportableData import CustomerData
 
-class _CloserData(ReportableData):
+class _CloserData(CustomerData):
     
     def __init__(self, name, raw_data, prepForReport):
         super().__init__(name, raw_data, prepForReport)
