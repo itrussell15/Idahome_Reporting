@@ -106,7 +106,6 @@ class EnerfloWrapper:
         this_url = self._getURL(url)
         r = self._get(this_url)
         date_cutoff = datetime.date.today() - datetime.timedelta(weeks = previous_weeks, days = 1)
-        # date_cutoff = datetime.datetime(date_cutoff.year, date_cutoff.month, date_cutoff.day).replace(tzinfo = None)
         
         # Different queries have seen different key name. This will be the first key value in the response.
         r_keys = list(r.keys())
@@ -116,7 +115,8 @@ class EnerfloWrapper:
         # Adds another page if there is any leftover data in the last page
         if numLeads % self.perPage != 0:
             numPages += 1
-        logging.info("{pages} pages available on {query} query @ {perPage} pages per lead".format(pages = numPages, query = url, perPage = self.perPage))
+        logging.info("{pages} pages available on {query} query @ {perPage} pages per lead".format(
+            pages = numPages, query = url, perPage = self.perPage))
         
         df = pd.DataFrame()
         for i in range(numPages, 0, -1):
@@ -131,6 +131,7 @@ class EnerfloWrapper:
             # print(type(df["created"].min().to_pydatetime().replace(tzinfo = None)))
             # print(type(date_cutoff))
             
+            # TODO Fix this comparison
             if df["created"].min().to_pydatetime() < date_cutoff:
                 df = df[df['created'] < date_cutoff]
                 break
@@ -214,6 +215,13 @@ class EnerfloWrapper:
             self.system_offset = self.checkKey("system_offset")
             self.closer = self.checkSubkey("name", "agent_user")
             self.panel_count = self.checkKey("panel_count")
+            self.system_cost = self.checkKey("system_cost_base", "cost")
+            self.milestones = self.getMilestones()
+
+        def getMilestones(self):
+            for i in self.checkKey("milestones"):
+                print(i["title"])
+            
 
                     
     # class Appointment:
