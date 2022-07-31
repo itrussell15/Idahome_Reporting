@@ -56,56 +56,23 @@ class EnerfloWrapper:
         else:
             return r
 
-    # TODO Migrate this data collection to a generic function that gathers page data
     def getCustomers(self, previous_weeks = 6):
-        
         all_data = self._gatherAllPageData(self._endpoints["GET"]["all_customers"],
                                 self.Lead,
                                 previous_weeks)
-        print(all_data)
-        
-        # url = self._getURL(self._endpoints["GET"]["all_customers"])
-
-        # # Get the number of data points to collect for next time.
-        # r = self._get(url)
-        
-        # date_cutoff = datetime.date.today() - datetime.timedelta(weeks = previous_weeks, days = 1)
-        # numLeads = r["dataCount"]
-        # # Get the number of pages we need to run through to get all the leads
-        # numPages = numLeads//pageSize
-        # # If the division isn't spot on, then add an extra page
-        # if numLeads % pageSize != 0:
-        #     numPages += 1
-        # logging.info("{} pages available at {} leads per page".format(numPages, pageSize))
-        
-        # df = pd.DataFrame()
-        # print("Requesting Data from Enerflo")
-        # for i in range(numPages, 0, -1):
-        #     # print("Requesting Page -{}-".format(i))
-        #     params = {"pageSize": pageSize, "page": i}
-        #     page = self._get(url, params, as_json = False)
-        #     remainingReqs = page.headers["X-RateLimit-Remaining"]
-        #     # print("Received Page -{}-, {} Remaining Requests".format(i, remainingReqs))
-        #     pageLeads = self._extractLeadData(page.json()["data"])
-        #     df = pd.concat([df, pageLeads])
-        #     if df["created"].min().to_pydatetime().date() < date_cutoff:
-        #         break
-        # logging.info("{} requests made".format(self.requestCount))
-        # logging.info("{} requests remaining after complete".format(remainingReqs))
-        # df.set_index("custID", inplace = True)
- 
-        # return df.sort_values(by = "created", ascending = False)
-            
+        return all_data
     
-    def getInstalls(self):
-        return self._gatherAllPageData(self._endpoints["GET"]["installs"],
+    def getInstalls(self, previous_weeks = 1):
+        all_data = self._gatherAllPageData(self._endpoints["GET"]["installs"],
                                        self.Install,
-                                       1)
+                                       previous_weeks)
+        return all_data
     
     def _gatherAllPageData(self, url, extractionObject, previous_weeks):
         this_url = self._getURL(url)
         r = self._get(this_url)
         date_cutoff = datetime.date.today() - datetime.timedelta(weeks = previous_weeks, days = 1)
+        datetime_cutoff = datetime.datetime(date_cutoff.year, date_cutoff.month, date_cutoff.day)
         
         # Different queries have seen different key name. This will be the first key value in the response.
         r_keys = list(r.keys())
@@ -126,21 +93,22 @@ class EnerfloWrapper:
             rRemaining = page.headers["X-RateLimit-Remaining"]
             data = page.json()[r_keys[1]]
             pageLeads = self._extractData(data, extractionObject)       
-            df = pd.concat([df, pageLeads])
-            
-            # print(type(df["created"].min().to_pydatetime().replace(tzinfo = None)))
-            # print(type(date_cutoff))
-            
-            # TODO Fix this comparison
-            if df["created"].min().to_pydatetime() < date_cutoff:
-                df = df[df['created'] < date_cutoff]
+            df = pd.concat([df, self.correctDatetime(pageLeads)])
+
+            if df["created"].min() < date_cutoff:
+                df = df[df['created'] < datetime_cutoff]
                 break
-            
-        print(df)
+
         logging.info("{} requests made".format(self.requestCount))
         logging.info("{} requests remaining after complete".format(rRemaining))
-        df.set_index("custID", inplace = True)
+        df.set_index("id", inplace = True)
         return df.sort_values(by = "created", ascending = True)
+    
+    def correctDatetime(self, data):
+        data["created"] = data["created"].apply(self._toPyDatetime)
+        return data
+    
+    _toPyDatetime = lambda self, x: pd.to_datetime(x).tz_localize(None)
         
 
 # %% Extraction Functions
@@ -156,29 +124,40 @@ class EnerfloWrapper:
         def __init__(self, data):
             self.data = data
         
-        def checkKey(self, key):
-            if self.data[key]:
-                return self.data[key]
-            else:
-                return None
+        # def checkKey(self, key):
+        #     if self.data[key]:
+        #         return self.data[key]
+        #     else:
+        #         return None
         
-        def checkSubkey(self, key, subset):
-            if self.data[subset]:
-                subset = self.data[subset]
-                # print(subset)
-                if subset[key]:
-                    return subset[key]
+        def checkKey(self, key):
+            return self._rCheckKey(key, self.data)
+        
+        def checkSubkey(self, key, data):
+            return self._rCheckKey(key, data)
+        
+        # TODO Make this so that it can take a list of keys to dig into
+        def _rCheckKey(self, key, data):
+            if type(key) != list:
+                if data[key]:
+                    return data[key]
                 else:
                     return None
             else:
-                return None
+                subset = self._rCheckKey(key[0], data)
+                for i in key[1:]:
+                    if i != key[-1]:
+                        subset = self._rCheckKey(i, data)
+                    else:
+                        break
+                return subset[i]        
 
     class Lead(Extraction):
         
         def __init__(self, leadData):
             super().__init__(leadData)
             
-            self.custID = self.checkKey("id")
+            self.id = self.checkKey("id")
             self.name = self.checkKey("fullName")
             self.email = self.checkKey("email")
             self.lead_source = self.checkKey("lead_source")
@@ -193,13 +172,14 @@ class EnerfloWrapper:
                 if "owner" in leadData.keys() else None                
             self.setter = "{} {}".format(leadData["setter"]["first_name"], leadData["setter"]["last_name"]) \
                 if "setter" in leadData.keys() else None     
-
+                
+            # TODO Check if this section works with only the new CheckKey method
             self.nexApptDate = None
             self.nextApptDetail = None
             
             if self.checkKey("futureAppointments"):
                 apptNum = list(leadData["futureAppointments"].keys())[0]
-                apptDetails = self.checkSubkey(apptNum, "futureAppointments")
+                apptDetails = self.checkKey(apptNum, "futureAppointments")
                 self.nextApptDate = datetime.datetime.fromisoformat(apptDetails["start_time_local"])
                 self.nextApptDate = apptDetails["name"]
             
@@ -209,19 +189,29 @@ class EnerfloWrapper:
             super().__init__(installData)
             
             self.id = self.checkKey("id")
+            self.customer = self.checkKey(["customer", "name"])
             self.created = datetime.datetime.fromisoformat(self.checkKey("created_at"))
             self.status = self.checkKey("status_name")
             self.system_size = self.checkKey("system_size")
             self.system_offset = self.checkKey("system_offset")
-            self.closer = self.checkSubkey("name", "agent_user")
+            self.closer = self.checkKey(["agent_user", "name"])
             self.panel_count = self.checkKey("panel_count")
-            self.system_cost = self.checkKey("system_cost_base", "cost")
-            self.milestones = self.getMilestones()
-
-        def getMilestones(self):
-            for i in self.checkKey("milestones"):
-                print(i["title"])
+            self.system_cost = self.checkKey(["cost", "system_cost_base"])
             
+            self.milestone = self.getMilestone()
+            print("{} milestone {}".format(self.customer, self.milestone))
+            
+
+        def getMilestone(self):
+            latest = (None, datetime.datetime(1999, 1, 1))
+            for i in self.checkKey("milestones"):
+                date = self.checkSubkey(["install_milestone", "completed_on"], i)
+                if date:
+                    date = datetime.datetime.strptime(date, "%Y-%m-%d")
+                    title = self.checkSubkey("title", i)
+                    if date > latest[1]:
+                        latest = (title, date)
+            return latest[0]
 
                     
     # class Appointment:
@@ -234,7 +224,7 @@ class EnerfloWrapper:
             
 if __name__ == "__main__":
     wrapper = EnerfloWrapper()    
-    customers = wrapper.getCustomers()
-    # installs = wrapper.getInstalls()
-    # print(installs.head())
+    # customers = wrapper.getCustomers()
+    installs = wrapper.getInstalls()
+    # print(customers.head())
     
