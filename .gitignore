@@ -10,7 +10,6 @@ release/
 #Files
 Data/Data.xlsx
 Idahome Data Draft.xlsx
-IdahomeHours.ods
 .DS_Store
 
 #File Extensions
@@ -20,8 +19,9 @@ IdahomeHours.ods
 *.orig
 Data/Secret.txt
 *.log
+*.ods
 
 #Include these from excluded places
 !assets/logo.png
 !Release.spec
-
+!IdahomeHours.ods
