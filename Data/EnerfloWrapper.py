@@ -29,7 +29,8 @@ class EnerfloWrapper:
         self.requestCount = 0
         self.perPage = perPageRequest
         
-    def _loadToken(self):
+    @staticmethod
+    def _loadToken():
         with open(resource_path("Data/Secret.txt"), "r") as f:
             data = f.readlines()[0]
         return data
@@ -37,8 +38,11 @@ class EnerfloWrapper:
     def _getURL(self, endpoint):
         return self.BASE_URL.format(endpoint)
     
+    def _getUnique(self, column):
+        return self._data[column].unique()
+    
     # Put get request with pages here
-    def _get(self, url, params = None, as_json = True):
+    def _getRequest(self, url, params = None, as_json = True):
         try:
             r = requests.get(url, params = params, headers = self._headers)
             self.requestCount += 1
@@ -55,22 +59,10 @@ class EnerfloWrapper:
             return r.json()
         else:
             return r
-
-    def getCustomers(self, previous_weeks = 6):
-        all_data = self._gatherAllPageData(self._endpoints["GET"]["all_customers"],
-                                self.Lead,
-                                previous_weeks)
-        return all_data
-    
-    def getInstalls(self, previous_weeks = 1):
-        all_data = self._gatherAllPageData(self._endpoints["GET"]["installs"],
-                                       self.Install,
-                                       previous_weeks)
-        return all_data
     
     def _gatherAllPageData(self, url, extractionObject, previous_weeks):
         this_url = self._getURL(url)
-        r = self._get(this_url)
+        r = self._getRequest(this_url)
         date_cutoff = datetime.date.today() - datetime.timedelta(weeks = previous_weeks, days = 1)
         datetime_cutoff = datetime.datetime(date_cutoff.year, date_cutoff.month, date_cutoff.day)
         
@@ -89,7 +81,7 @@ class EnerfloWrapper:
         for i in range(numPages, 0, -1):
             print("Requesting page {}".format(i))
             params = {"pageSize": self.perPage, "page": i}
-            page = self._get(this_url, params, as_json = False)
+            page = self._getRequest(this_url, params, as_json = False)
             rRemaining = page.headers["X-RateLimit-Remaining"]
             data = page.json()[r_keys[1]]
             pageLeads = self._extractData(data, extractionObject)       
@@ -102,6 +94,9 @@ class EnerfloWrapper:
         logging.info("{} requests made".format(self.requestCount))
         logging.info("{} requests remaining after complete".format(rRemaining))
         df.set_index("id", inplace = True)
+        
+        df.drop("data", inplace = True, axis = 1)
+        
         return df.sort_values(by = "created", ascending = True)
     
     def correctDatetime(self, data):
@@ -109,9 +104,7 @@ class EnerfloWrapper:
         return data
     
     _toPyDatetime = lambda self, x: pd.to_datetime(x).tz_localize(None)
-        
-
-# %% Extraction Functions
+    
     def _extractData(self, pageData, object_type):
         data = []
         for lead in pageData:
@@ -124,35 +117,62 @@ class EnerfloWrapper:
         def __init__(self, data):
             self.data = data
         
-        # def checkKey(self, key):
-        #     if self.data[key]:
-        #         return self.data[key]
-        #     else:
-        #         return None
-        
         def checkKey(self, key):
             return self._rCheckKey(key, self.data)
         
         def checkSubkey(self, key, data):
             return self._rCheckKey(key, data)
         
-        # TODO Make this so that it can take a list of keys to dig into
         def _rCheckKey(self, key, data):
             if type(key) != list:
-                if data[key]:
-                    return data[key]
-                else:
+                try:
+                    if data[key]:
+                        return data[key]
+                    else:
+                        return None
+                except:
+                    logging.warning("Expected key of {} was not found and corrected to None".format(key))
                     return None
             else:
                 subset = self._rCheckKey(key[0], data)
                 for i in key[1:]:
                     if i != key[-1]:
-                        subset = self._rCheckKey(i, data)
+                        subset = self._rCheckKey(i, subset)
                     else:
                         break
-                return subset[i]        
+                try:
+                    return subset[i]
+                except:
+                    return None
 
-    class Lead(Extraction):
+
+class CustomerData(EnerfloWrapper):
+        
+    def __init__(self, perPageRequest = 200, previous_weeks = 6):
+        super().__init__(perPageRequest = perPageRequest)
+        self.previous_weeks = previous_weeks
+        
+        # TODO Put all of these into parent class 
+        self._data = self.get(previous_weeks)
+        self.closers = self._getUnique("closer")
+        self.setters = self._getUnique("setter")
+        
+    # TODO Put this in parent class
+    def get(self, previous_weeks = None):
+        if previous_weeks !=  self.previous_weeks or "_data" not in self.__dict__:
+            if not previous_weeks:
+                previous_weeks = self.previous_weeks
+            
+            data = self._gatherAllPageData(url = self._endpoints["GET"]["all_customers"],
+                                           extractionObject = self.Lead,
+                                           previous_weeks = previous_weeks)
+            self.previous_weeks = previous_weeks
+            return data
+        else:
+            logging.info("Gathering same data previously requested. Returning previous data")
+            return self._data
+                
+    class Lead(EnerfloWrapper.Extraction):
         
         def __init__(self, leadData):
             super().__init__(leadData)
@@ -168,22 +188,27 @@ class EnerfloWrapper:
             self.latLong = (self.checkKey("lat"), self.checkKey("lng"))
             
             self.address = f"""{leadData["address"]} {leadData["city"]}, {leadData["state"]} {leadData["zip"]}"""
-            self.owner = "{} {}".format(leadData["owner"]["first_name"], leadData["owner"]["last_name"]) \
+            self.closer = "{} {}".format(leadData["owner"]["first_name"], leadData["owner"]["last_name"]) \
                 if "owner" in leadData.keys() else None                
             self.setter = "{} {}".format(leadData["setter"]["first_name"], leadData["setter"]["last_name"]) \
                 if "setter" in leadData.keys() else None     
-                
-            # TODO Check if this section works with only the new CheckKey method
-            self.nexApptDate = None
-            self.nextApptDetail = None
             
-            if self.checkKey("futureAppointments"):
-                apptNum = list(leadData["futureAppointments"].keys())[0]
-                apptDetails = self.checkKey(apptNum, "futureAppointments")
-                self.nextApptDate = datetime.datetime.fromisoformat(apptDetails["start_time_local"])
-                self.nextApptDate = apptDetails["name"]
+            apptNum = list(leadData["futureAppointments"].keys())[0] if self.checkKey("futureAppointments") else None
             
-    class Install(Extraction):
+            date = self.checkKey(["futureAppointments", str(apptNum), "start_time_local"])
+            self.nexApptDate = datetime.datetime.fromisoformat(date) if date else None
+            self.nextApptDetail = self.checkKey(["futureAppointments", str(apptNum), "name"])            
+
+class InstallData(EnerfloWrapper):
+    
+    def __init__(self, fromFile = False, perPageRequest = 200):
+        super().__init__(fromFile = fromFile, perPageRequest = perPageRequest)
+        
+    def get(self, previous_weeks):
+        data = self._gatherAllPageData(self._endpoints["GET"]["installs"], self.Install, previous_weeks)
+        return data
+    
+    class Install(EnerfloWrapper.Extraction):
         
         def __init__(self, installData):
             super().__init__(installData)
@@ -199,9 +224,7 @@ class EnerfloWrapper:
             self.system_cost = self.checkKey(["cost", "system_cost_base"])
             
             self.milestone = self.getMilestone()
-            print("{} milestone {}".format(self.customer, self.milestone))
             
-
         def getMilestone(self):
             latest = (None, datetime.datetime(1999, 1, 1))
             for i in self.checkKey("milestones"):
@@ -212,19 +235,11 @@ class EnerfloWrapper:
                     if date > latest[1]:
                         latest = (title, date)
             return latest[0]
-
-                    
-    # class Appointment:
-        
-    #     def __init__(self, data):
-    #         data = data[list(data.keys())[0]]
-    #         self.title = data["name"]
-    #         self.status = data["status"]
-    #         self.time = datetime.datetime.fromisoformat(data["start_time_local"])
             
 if __name__ == "__main__":
     wrapper = EnerfloWrapper()    
-    # customers = wrapper.getCustomers()
-    installs = wrapper.getInstalls()
+    customers = CustomerData()
+    # data = customers.get()
+    # installs = InstallData().get(previous_weeks = 1)
     # print(customers.head())
-    
+    # print(customers.columns)

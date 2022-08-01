@@ -37,7 +37,7 @@ class DataHandler:
         self.setupLogging()
         logging.info("Program Started @ {}".format(datetime.datetime.now()))
         
-        self.wrapper = EnerfloWrapper(perPageRequest = page_size)
+        # self.wrapper = EnerfloWrapper(perPageRequest = page_size)
         self.previous_weeks = previous_weeks
     
     def setupLogging(self):
@@ -89,7 +89,7 @@ class DataHandler:
                 closerData = df.loc[df["owner"] == name].copy()
                 return InvidualData(name, closerData, prepForReport)
             else:
-                logging.warn("Closer {} has no leads in data".format(name))
+                logging.warning("Closer {} has no leads in data".format(name))
                 raise KeyError("{} has no leads in this data".format(name))
         else:
             officeData = OfficeData(df.copy(), prepForReport)
