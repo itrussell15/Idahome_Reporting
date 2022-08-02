@@ -6,6 +6,7 @@ build/
 __pycache__/
 build_archive/
 release/
+Data/installs/
 
 #Files
 Data/Data.xlsx
