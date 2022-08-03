@@ -7,14 +7,11 @@ Created on Fri Jun 10 22:57:51 2022
 
 import sys
 
+sys.path.append("..")
 
 import pandas as pd
 import os, datetime
-import matplotlib.pyplot as plt
-import matplotlib
 import logging
-
-# sys.path.append(os.path.dirname(os.getcwd()))
 from global_functions import resource_path
 
 # pd.set_option('display.max_rows', 500)
