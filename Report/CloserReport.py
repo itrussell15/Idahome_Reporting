@@ -77,12 +77,12 @@ class OfficeReport(_CloserReport):
         self.create_body(office)
         
     def create_body(self, office):
-        # self._createSourceMatrix(office)
-        # self.ln(10)
-        # self._LeadGenerationMatrix(office)
-        # self.add_page()
-        # self._LeadStatusMatrix(office)
-        # self.ln(10)
+        self._createSourceMatrix(office)
+        self.ln(10)
+        self._LeadGenerationMatrix(office)
+        self.add_page()
+        self._LeadStatusMatrix(office)
+        self.ln(10)
         self._customerTable(office)
         
     def _LeadGenerationMatrix(self, subject):

@@ -17,7 +17,7 @@ from global_functions import resource_path, resource_base
 
 class EnerfloWrapper:
     
-    def __init__(self, perPageRequest = 200):
+    def __init__(self, previous_weeks, perPageRequest = 200):
         self.BASE_URL = "https://enerflo.io/api/{}"
         self._headers = {"api-key": self._loadToken()}
         self._endpoints = {
@@ -28,6 +28,7 @@ class EnerfloWrapper:
             }
         self.requestCount = 0
         self.perPage = perPageRequest
+        self.previous_weeks = previous_weeks
         
     @staticmethod
     def _loadToken():
@@ -39,7 +40,10 @@ class EnerfloWrapper:
         return self.BASE_URL.format(endpoint)
     
     def _getUnique(self, column):
-        return self._data[column].unique()
+        data = self._data[column].dropna()
+        
+        # data = data[column].unique()
+        return data.unique()
     
     # Put get request with pages here
     def _getRequest(self, url, params = None, as_json = True):
@@ -112,6 +116,22 @@ class EnerfloWrapper:
             data.append(vars(thisData))
         df = pd.DataFrame.from_records(data)
         return df
+    
+    def get(self, url, obj, previous_weeks = None):
+        if previous_weeks !=  self.previous_weeks or "_data" not in self.__dict__:
+            if previous_weeks:
+                logging.info("New week range requested. Data now for {} weeks".format(self.previous_weeks))
+                previous_weeks = self.previous_weeks
+            
+                data = self._gatherAllPageData(url = url,
+                                                extractionObject = obj,
+                                                previous_weeks = previous_weeks)
+                return data
+            else:
+                return self._data
+        else:
+            logging.info("Gathering same data previously requested. Returning previous data")
+            return self._data
 
     class Extraction:
         def __init__(self, data):
@@ -149,28 +169,35 @@ class EnerfloWrapper:
 class CustomerData(EnerfloWrapper):
         
     def __init__(self, perPageRequest = 200, previous_weeks = 6):
-        super().__init__(perPageRequest = perPageRequest)
-        self.previous_weeks = previous_weeks
+        super().__init__(perPageRequest = perPageRequest, previous_weeks = 6)
         
-        # TODO Put all of these into parent class 
         self._data = self.get(previous_weeks)
-        self.closers = self._getUnique("closer")
         self.setters = self._getUnique("setter")
+        self.closers = self._getUnique("closer")
         
-    # TODO Put this in parent class
-    def get(self, previous_weeks = None):
-        if previous_weeks !=  self.previous_weeks or "_data" not in self.__dict__:
-            if not previous_weeks:
-                previous_weeks = self.previous_weeks
+        
+    def get(self, weeks = None):
+        self._data = EnerfloWrapper.get(self,
+            url = self._endpoints["GET"]["all_customers"],
+            obj = self.Lead,
+            previous_weeks = weeks)
+        return self._data
+        
+        
+    # # TODO Put this in parent class
+    # def get(self, previous_weeks = None):
+    #     if previous_weeks !=  self.previous_weeks or "_data" not in self.__dict__:
+    #         if not previous_weeks:
+    #             previous_weeks = self.previous_weeks
             
-            data = self._gatherAllPageData(url = self._endpoints["GET"]["all_customers"],
-                                           extractionObject = self.Lead,
-                                           previous_weeks = previous_weeks)
-            self.previous_weeks = previous_weeks
-            return data
-        else:
-            logging.info("Gathering same data previously requested. Returning previous data")
-            return self._data
+    #         data = self._gatherAllPageData(url = self._endpoints["GET"]["all_customers"],
+    #                                        extractionObject = self.Lead,
+    #                                        previous_weeks = previous_weeks)
+    #         self.previous_weeks = previous_weeks
+    #         return data
+    #     else:
+    #         logging.info("Gathering same data previously requested. Returning previous data")
+    #         return self._data
                 
     class Lead(EnerfloWrapper.Extraction):
         
@@ -201,12 +228,18 @@ class CustomerData(EnerfloWrapper):
 
 class InstallData(EnerfloWrapper):
     
-    def __init__(self, fromFile = False, perPageRequest = 200):
-        super().__init__(fromFile = fromFile, perPageRequest = perPageRequest)
+    def __init__(self, perPageRequest = 200, previous_weeks = 6):
+        super().__init__(perPageRequest = perPageRequest, previous_weeks = previous_weeks)
+        self._data = self.get(previous_weeks)
+        self.setters = self._getUnique("setter")
+        self.closers = self._getUnique("closer")
         
-    def get(self, previous_weeks):
-        data = self._gatherAllPageData(self._endpoints["GET"]["installs"], self.Install, previous_weeks)
-        return data
+    def get(self, weeks = None):
+        self._data = EnerfloWrapper.get(self,
+            url = self._endpoints["GET"]["installs"],
+            obj = self.Install,
+            previous_weeks = weeks)
+        return self._data
     
     class Install(EnerfloWrapper.Extraction):
         
@@ -220,9 +253,9 @@ class InstallData(EnerfloWrapper):
             self.system_size = self.checkKey("system_size")
             self.system_offset = self.checkKey("system_offset")
             self.closer = self.checkKey(["agent_user", "name"])
+            self.setter = self.checkKey(["setter_user", "name"])
             self.panel_count = self.checkKey("panel_count")
             self.system_cost = self.checkKey(["cost", "system_cost_base"])
-            
             self.milestone = self.getMilestone()
             
         def getMilestone(self):
@@ -237,9 +270,6 @@ class InstallData(EnerfloWrapper):
             return latest[0]
             
 if __name__ == "__main__":
-    wrapper = EnerfloWrapper()    
-    customers = CustomerData()
-    # data = customers.get()
-    # installs = InstallData().get(previous_weeks = 1)
-    # print(customers.head())
-    # print(customers.columns)
+    # customers = CustomerData()
+    installs = InstallData()
+    data = installs.get()
