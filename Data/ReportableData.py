@@ -5,6 +5,10 @@ Created on Sat Jul  9 15:02:01 2022
 @author: Schmuck
 """
 
+# ***PURPOSE****
+# House Metadata and KPIs for data that has been passed into it.
+# Should not 
+
 import datetime
 import pandas as pd
 import logging
@@ -23,21 +27,21 @@ class CustomerData:
         self._source = self._groupedOutput("lead_source")
         self._status = self._groupedOutput("lead_status")
         
-        self.closers = self.leads["owner"].unique()
-        self.leads["setter"] = self.leads["setter"].apply(self.removeCloserAsSetter)
-        self.setters = self.leads["setter"].unique()
+        # self.closers = self.leads["owner"].unique()
+        # self.leads["setter"] = self.leads["setter"].apply(self.removeCloserAsSetter)
+        # self.setters = self.leads["setter"].unique()
         
-        if "Enerflo Admin" in self.closers:
-            self.leads = self.leads[self.leads["owner"] != "Enerflo Admin"]
+        # if "Enerflo Admin" in self.closers:
+        #     self.leads = self.leads[self.leads["owner"] != "Enerflo Admin"]
         
-        leads = self.leads.copy()
-        leads["setter"] = leads["setter"].replace("Austin Anderson- Call Center", "Austin Anderson")
-        self.leads = leads
+        # leads = self.leads.copy()
+        # leads["setter"] = leads["setter"].replace("Austin Anderson- Call Center", "Austin Anderson")
+        # self.leads = leads
         
-        self.leads["dashboard"] = self.leads.apply(self._createDashboard, axis = 1)
+        # self.leads["dashboard"] = self.leads.apply(self._createDashboard, axis = 1)
 
-        if prepForReport:
-            self._reportPrep()
+        # if prepForReport:
+        #     self._reportPrep()
     
     @staticmethod
     def _createDashboard(x):
