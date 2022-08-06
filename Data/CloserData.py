@@ -100,7 +100,7 @@ class OfficeData(_CloserData):
         everything.fillna(0.0, inplace = True)
         everything["sum"] = everything.sum(axis = 1)
         everything.sort_values(by = "sum", ascending = False, inplace = True)
-        everything.drop("sum", axis = 1, inplace = True)
+        everything.drop("sum", axis = 1clas, inplace = True)
         try:
             everything.drop("Enerflo Admin", axis = 0, inplace = True)
         except:

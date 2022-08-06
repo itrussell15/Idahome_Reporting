@@ -238,7 +238,7 @@ class Customers(EnerfloWrapper):
             self.nexApptDate = datetime.datetime.fromisoformat(date) if date else None
             self.nextApptDetail = self.checkKey(["futureAppointments", str(apptNum), "name"])            
 
-class InstallData(EnerfloWrapper):
+class Installs(EnerfloWrapper):
     def __init__(self, perPageRequest = 150):
         super().__init__(perPageRequest = perPageRequest, previous_weeks = None)
         self.collect()
@@ -254,8 +254,6 @@ class InstallData(EnerfloWrapper):
             previous_weeks = None)
         
         self._data["current_milestone"].replace(to_replace = "Net Meter Meter Install", value = "PTO", inplace = True)
-
-
     
     def getUpcomingInstalls(self, weeks):
         today = datetime.datetime.today()
