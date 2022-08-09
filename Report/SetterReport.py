@@ -21,39 +21,27 @@ class _SetterReport(Report):
         logging.info("Setter Report Creation initiated for {}".format(title))
         
     def KPIs(self, subject):
-        columns = ["Total Leads", "Lead-Pitched",  "% No Show"]
-        data = [subject.numLeads, subject.pitchRatio,  subject.cancelRatio]
-        data = ["{:.2f}%".format(i) for i in data]
-        data[0] = str(subject.numLeads)
-        final = [columns, data]
+        table = subject.KPIs
         
         cell_size = {"height": 6, "widths": [35, 35, 35]}
-        self._createTable(final, "KPIs", cell_size = cell_size)
+        self._createTable(table, "KPIs", cell_size = cell_size)
     
 class SetterIndividualReport(_SetterReport):
     
     def __init__(self, name, handler = None):
         super().__init__(name, data_handler = handler)
-        setter = self._data.getSetterData(name)
+        setter = self._data.getSetter(name)
         self._create_body(setter)
         
     def _create_body(self, setter):
         self.KPIs(setter)
         self.ln(10)
         self._customerTable(setter)
-
-    
+     
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [65, 38, 25, 38]}
-        
-        pull_values = ["name", "lead_status", "created", "nextApptDate"]
-        customers = subject.leads[pull_values].astype(str)
-        customers.replace(to_replace = "Signed- Canceled", value = "Sign-Cncl", inplace = True)
-        customers.replace(to_replace = "", value = "None", inplace = True)
-        
-        customers.columns = ["Customer", "Lead Status", "Created", "Next Appt"]
-        
-        self._createTable(customers, "Leads", cell_size)
+        table = subject.customerTable.copy()
+        self._createTable(table, "Leads", cell_size)
         
 class SetterOfficeReport(_SetterReport):
     
@@ -69,21 +57,11 @@ class SetterOfficeReport(_SetterReport):
 
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [64, 27, 42, 25, 38]}
-        
-        pull_values = ["name", "lead_status", "setter", "created", "nextApptDate"]
-        customers = subject.leads[pull_values].astype(str)
-        customers.replace(to_replace = "Signed- Canceled", value = "Sign-Cncl", inplace = True)
-        customers.replace(to_replace = "", value = "None", inplace = True)
-        
-        customers.sort_values(by = "setter", ascending = True, inplace = True)
-        
-        customers.columns = ["Customers", "Lead Status", "Setter", "Created", "Next Appt"]
-        
-        self._createTable(customers, "Leads", cell_size)
+        self._createTable(subject.customerTable, "Leads", cell_size)
 
 if __name__ == "__main__":
 
     # report = SetterOfficeReport()
-    report = SetterIndividualReport("Kaden Reimer")
+    report = SetterIndividualReport("Kyle Wagner")
     report.output()
     

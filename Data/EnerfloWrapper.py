@@ -101,12 +101,12 @@ class EnerfloWrapper:
             df = pd.concat([df, self.correctDatetime(pageLeads)])
             
             if previous_weeks:
+
                 date_cutoff = datetime.date.today() - datetime.timedelta(weeks = previous_weeks, days = 1)
                 datetime_cutoff = datetime.datetime(date_cutoff.year, date_cutoff.month, date_cutoff.day)
                 if df["created"].min() < date_cutoff:
-                    df = df[df['created'] < datetime_cutoff]
+                    df = df[df['created'] > datetime_cutoff]
                     break
-
         logging.info("{} requests made".format(self.requestCount))
         logging.info("{} requests remaining after complete".format(rRemaining))
         df.set_index("id", inplace = True)
@@ -190,7 +190,7 @@ class EnerfloWrapper:
 class Customers(EnerfloWrapper):
         
     def __init__(self, perPageRequest = 200, previous_weeks = 6):
-        super().__init__(perPageRequest = perPageRequest, previous_weeks = 6)
+        super().__init__(perPageRequest = perPageRequest, previous_weeks = previous_weeks)
         
         self.collect(previous_weeks)
         self.setters = self._getUnique("setter")
@@ -235,7 +235,7 @@ class Customers(EnerfloWrapper):
             apptNum = list(leadData["futureAppointments"].keys())[0] if self.checkKey("futureAppointments") else None
             
             date = self.checkKey(["futureAppointments", str(apptNum), "start_time_local"])
-            self.nexApptDate = datetime.datetime.fromisoformat(date) if date else None
+            self.nextApptDate = datetime.datetime.fromisoformat(date) if date else None
             self.nextApptDetail = self.checkKey(["futureAppointments", str(apptNum), "name"])            
 
 class Installs(EnerfloWrapper):
@@ -302,6 +302,6 @@ class Installs(EnerfloWrapper):
             return self.checkKey(["last_completed_milestone", "title"])
             # 
 if __name__ == "__main__":
-    customers = Customers(previous_weeks = 1)
+    customers = Customers(previous_weeks = 6)
     # installs = InstallData()
     # data = installs.get()

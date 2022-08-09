@@ -90,11 +90,9 @@ class Report(FPDF):
                      bold_rows = [],
                      column_links = None
                      ):
-               
         if type(data) == pd.DataFrame:
             data = data.fillna("Null").copy().astype(str)
             data = pd.DataFrame(np.vstack([data.columns, data])).values
-
         self.set_font(self._font, 'B', 15)
         self.cell(0, h = 10, txt = title, align = 'C')
         self.ln(10)

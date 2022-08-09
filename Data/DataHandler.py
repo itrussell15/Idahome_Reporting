@@ -13,8 +13,12 @@ import os, datetime
 import matplotlib.pyplot as plt
 import matplotlib
 import logging
+from enum import Enum
 
 from global_functions import resource_path
+
+import Customers
+
 
 # pd.set_option('display.max_rows', 500)
 # pd.set_option('display.max_columns', 100)
@@ -35,7 +39,7 @@ import EnerfloWrapper
 class DataHandler:
 
     def __init__(self, previous_weeks = 6, page_size = 200):
-        self.previous_weeks = 6
+        self.previous_weeks = previous_weeks
         self.page_size = page_size
         
         self.setupLogging()
@@ -69,6 +73,26 @@ class DataHandler:
             self._customers = self._collectCustomers()
         return self._customers
     
+    def getCloser(self, name = None):
+        if name:
+            return Customers.IndvCloserData(name, self.customers)
+        else:
+            return Customers.OfficeCloserData(self.customers)
+    
+    def getSetter(self, name = None):
+        if name:
+            return Customers.IndvSetterData(name, self.customers)
+        else:
+            return Customers.OfficeSetterData(self.customers)
+    
+    # def getOffice(self, job_type):
+    #     options = {
+    #         JOB_TYPE.CLOSER: Customers.OfficeCloserData(self.customers),
+    #         JOB_TYPE.SETTER: Customers.OfficeSetterData(self.customers),
+    #         }
+    #     return options[job_type]
+        
+    
     def _collectInstalls(self):
         installs = EnerfloWrapper.Installs(
             perPageRequest = self.page_size)
@@ -78,14 +102,11 @@ class DataHandler:
     def installs(self):
         if not self._installs:
             self._installs = self._collectInstalls()
-        return self._installs
+        return self._install
     
-# %% CustomerData Pulls
-
-def getCloserData(self, name):
-    if name:
-        return 
-
+class JOB_TYPE(Enum):
+    CLOSER = 1,
+    SETTER = 2
     
 
 # %% InstallData Pulls
@@ -95,7 +116,10 @@ def getCloserData(self, name):
 
 # %% Main
 if __name__ ==  "__main__":
-    data = DataHandler(previous_weeks = 1)
+    data = DataHandler(previous_weeks = 6)
+    # setter = data.getSetter("Kyle Wagner")
+    # closer = data.getCloser("Zach Trussell")
     
+    office = data.getOffice(JOB_TYPE.SETTER)
     
     
