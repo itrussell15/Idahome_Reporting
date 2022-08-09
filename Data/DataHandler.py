@@ -58,6 +58,14 @@ class DataHandler:
             filemode = "w"
             )
         logging.getLogger(__name__)
+        
+    @property
+    def closers(self):
+        return self.customers.closers
+    
+    @property
+    def setters(self):
+        return self.customers.setters
 
 # %% Data Grabs
 
@@ -85,14 +93,6 @@ class DataHandler:
         else:
             return Customers.OfficeSetterData(self.customers)
     
-    # def getOffice(self, job_type):
-    #     options = {
-    #         JOB_TYPE.CLOSER: Customers.OfficeCloserData(self.customers),
-    #         JOB_TYPE.SETTER: Customers.OfficeSetterData(self.customers),
-    #         }
-    #     return options[job_type]
-        
-    
     def _collectInstalls(self):
         installs = EnerfloWrapper.Installs(
             perPageRequest = self.page_size)
@@ -116,10 +116,10 @@ class JOB_TYPE(Enum):
 
 # %% Main
 if __name__ ==  "__main__":
-    data = DataHandler(previous_weeks = 6)
+    data = DataHandler(previous_weeks = 1)
     # setter = data.getSetter("Kyle Wagner")
-    # closer = data.getCloser("Zach Trussell")
-    
-    office = data.getOffice(JOB_TYPE.SETTER)
+    closer = data.getCloser("Darren Phillips")
+    print(closer)
+    # office = data.getOffice(JOB_TYPE.SETTER)
     
     

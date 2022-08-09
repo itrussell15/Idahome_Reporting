@@ -12,26 +12,39 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 from CloserReport import IndividualReport, OfficeReport
 from SetterReport import SetterIndividualReport, SetterOfficeReport
 from DataHandler import DataHandler
-import logging
+import logging, traceback
+import datetime
 
-data = DataHandler()
 
-office_report = OfficeReport(handler = data)
-office_report.output()
-print("Created Closer Office Report")
+data = DataHandler(previous_weeks = 6)
 
 for i in data.closers:
-    if i not in ["Enerflo Admin", "No Owner"]:
+    try:
         report = IndividualReport(i, handler = data)
         report.output()
-        print("Closer Report Created for {}".format(i))
-
-setter_report = SetterOfficeReport(handler = data)
-setter_report.output()
-print("Created Setter Office Report")
+        print("Closer Report Generated for {}".format(i))
+        # logging.info("R")
+    except:
+        logging.warning("Unable to create report for {} Please see the exception:\n{}".format(i, traceback.format_exc()))
 
 for i in data.setters:
-    if i not in ["No Setter"]:
+    try:
         report = SetterIndividualReport(i, handler = data)
         report.output()
-        print("Setter Report Created for {}".format(i))
+        print("Setter Report Generated for {}".format(i))
+    except:
+        logging.warning("Unable to create report for {} Please see the exception:\n{}".format(i, traceback.format_exc()))
+
+try:
+    report = OfficeReport(handler = data)
+    report.output()
+    print("Closer Office Report Generated")
+except:
+        logging.warning("Unable to create closer office report. Please see the exception:\n{}".format(i, traceback.format_exc()))
+    
+try:
+    report = SetterOfficeReport(handler = data)
+    report.output()
+    print("Setter Office Report Generated")
+except:
+    logging.warning("Unable to create setter office report. Please see the exception:\n{}".format(i, traceback.format_exc()))

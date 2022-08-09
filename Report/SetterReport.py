@@ -32,6 +32,7 @@ class SetterIndividualReport(_SetterReport):
         super().__init__(name, data_handler = handler)
         setter = self._data.getSetter(name)
         self._create_body(setter)
+        self._name = name
         
     def _create_body(self, setter):
         self.KPIs(setter)
@@ -43,11 +44,15 @@ class SetterIndividualReport(_SetterReport):
         table = subject.customerTable.copy()
         self._createTable(table, "Leads", cell_size)
         
+    def output(self):
+        super().output()
+        logging.info('Setter Report Generated for {}'.format(self._name))
+        
 class SetterOfficeReport(_SetterReport):
     
     def __init__(self, handler = None, path = None):
         super().__init__("Idahome Solar", data_handler = handler)
-        office = self._data.getSetterData()
+        office = self._data.getSetter()
         self._create_body(office)
         
     def _create_body(self, office):
@@ -56,12 +61,16 @@ class SetterOfficeReport(_SetterReport):
         self._customerTable(office)
 
     def _customerTable(self, subject):
-        cell_size = {"height": 6, "widths": [64, 27, 42, 25, 38]}
+        cell_size = {"height": 6, "widths": [64, 33, 27, 34, 35]}
         self._createTable(subject.customerTable, "Leads", cell_size)
+        
+    def output(self):
+        super().output()
+        logging.info('Setter Office Report Generated')
 
 if __name__ == "__main__":
 
-    # report = SetterOfficeReport()
-    report = SetterIndividualReport("Kyle Wagner")
+    report = SetterOfficeReport()
+    # report = SetterIndividualReport("Kyle Wagner")
     report.output()
     

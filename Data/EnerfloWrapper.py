@@ -169,7 +169,7 @@ class EnerfloWrapper:
                     else:
                         return None
                 except:
-                    logging.warning("Expected key of {} was not found and corrected to None".format(key))
+                    # logging.warning("Expected key of {} was not found and corrected to None".format(key))
                     return None
             else:
                 subset = self._rCheckKey(key[0], data)
@@ -193,8 +193,7 @@ class Customers(EnerfloWrapper):
         super().__init__(perPageRequest = perPageRequest, previous_weeks = previous_weeks)
         
         self.collect(previous_weeks)
-        self.setters = self._getUnique("setter")
-        self.closers = self._getUnique("closer")
+        # self.setters = self._getUnique("setter")
         
     def collect(self, weeks = None):
         print("Gathering Customer Data")
@@ -208,6 +207,14 @@ class Customers(EnerfloWrapper):
     @property
     def data(self):
         return self._data
+    
+    @property
+    def closers(self):
+        return self._getUnique("closer")
+    
+    @property
+    def setters(self):
+        return self._getUnique("setter")
                 
     class Lead(EnerfloWrapper.Extraction):
         

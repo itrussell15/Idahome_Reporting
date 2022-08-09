@@ -8,6 +8,7 @@ Created on Thu Aug  4 22:03:48 2022
 
 import pandas as pd
 import datetime 
+import logging
 
 class CustomerData:
     
@@ -104,7 +105,9 @@ class CustomerData:
         data["created"] = data["created"].apply(self.formatDate)
         data["nextApptDate"] = data["nextApptDate"].apply(self.formatDatetime)
         data["nextApptDate"].fillna("-", inplace = True)
-
+        data["setter"].replace("Austin Anderson- Call Center", "Austin Anderson", inplace = True)
+        data["lead_source"].replace("Website/Called In", "Website", inplace = True) 
+        data["lead_status"].replace("Signed- Canceled", "Sign-Cancel", inplace = True) 
         data.sort_values(by = "created", ascending = False, inplace = True)    
         data.columns = ["Customer", "Source", "Status", "Closer", "Setter", "Created", "Next Appt"]   
 
@@ -167,7 +170,7 @@ class OfficeCloserData(OfficeData):
     def customerTable(self):
         table = CustomerData.customerTable.fget(self)
         table = table[["Customer", "Source", "Status", "Closer"]]
-        # table.drop("Setter", axis = 1, inplace = True)
+        table.sort_values(by = "Closer", inplace = True)
         return table
     
     @property
@@ -235,8 +238,9 @@ class OfficeSetterData(OfficeData):
     @property
     def customerTable(self):
         table = CustomerData.customerTable.fget(self)
-        table = table[["Customer", "Source", "Status", "Setter"]]
-        # table.drop("Closer", axis = 1, inplace = True)
+        table = table[["Customer", "Source", "Status", "Setter", "Next Appt"]]
+        table.dropna(inplace = True)
+        table.sort_values(by = "Setter", inplace = True)
         return table
         
 class IndvData(CustomerData):
@@ -260,6 +264,8 @@ class IndvCloserData(IndvData):
     def __init__(self, name, data_obj):
         super().__init__(name, data_obj)
         
+        self._customerTable = CustomerData.customerTable.fget(self)
+        
         if name in data_obj.closers:
             self._data = self.maskIndvData(name, "closer")
         else:
@@ -268,7 +274,7 @@ class IndvCloserData(IndvData):
             
     @property
     def customerTable(self):
-        table = CustomerData.customerTable.fget(self)
+        table = self._customerTable.copy()
         table = table[["Customer", "Source", "Status"]]
         return table
         
@@ -295,8 +301,10 @@ if __name__ == "__main__":
     from DataHandler import DataHandler
     
     data = DataHandler(previous_weeks = 4)
-    # closer = IndvCloserData("Zach Trussell", data.customers)
-    setter = IndvSetterData("Kyle Wagner", data.customers) 
+    closer = IndvCloserData("Darren Phillips", data.customers)
+    # setter = IndvSetterData("Kyle Wagner", data.customers) 
     
-    print(setter.customerTable.head())
+    # print(setter.customerTable.head())
+    print(closer.data.head())
+    
         

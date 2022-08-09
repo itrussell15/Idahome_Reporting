@@ -39,6 +39,7 @@ class IndividualReport(_CloserReport):
     def __init__(self, closer_name, handler = None):
         super().__init__(closer_name, data_handler = handler)
         closer = self._data.getCloser(closer_name)
+        self._name = closer_name
         self.create_body(closer)    
         
     def create_body(self, closer):
@@ -48,8 +49,13 @@ class IndividualReport(_CloserReport):
         
     def _customerTable(self, subject):
         cell_size = {"height": 6, "widths": [65, 38, 40]}
+        table = subject.customerTable.copy()
         
-        self._createTable(subject.customerTable.copy(), "Leads", cell_size)
+        self._createTable(table, "Leads", cell_size)
+        
+    def output(self):
+        super().output()
+        logging.info('Closer Report Generated for {}'.format(self._name))
         
 class OfficeReport(_CloserReport):
     
@@ -88,8 +94,12 @@ class OfficeReport(_CloserReport):
         
         self._createTable(subject.customerTable, "Leads", cell_size)
         
+    def output(self):
+        super().output()
+        logging.info('Closer Office Report Generated')
+        
 if __name__ == "__main__":
     
-    # report = IndividualReport("Zach Trussell")
+    # report = IndividualReport("Darren Phillips")
     report = OfficeReport()
     report.output()
