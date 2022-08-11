@@ -29,19 +29,33 @@ class InstallReport(Report):
         self.ln(18)
         
     def create_body(self, subject):
-        self._PTO_Table(subject)
+        self.summaryTable("PTO", subject)
         self.ln(10)
-        self._AgreementTable(subject)
-        
-    def _PTO_Table(self, subject):
-        table = subject.summaryData("PTO")
-        cell_size = {"height": 6, "widths": [30, 30]}
-        self._createTable(table, "PTO Summary", cell_size)
+        self.summaryTable("Agreement", subject)
+        self.ln(10)
+        self.PTO_Table(subject)
+        self.ln(10)
+        self.agreementTable(subject)
     
-    def _AgreementTable(self, subject):
-        table = subject.summaryData("agreement")
-        cell_size = {"height": 6, "widths": [30, 30]}
-        self._createTable(table, "Agreement Summary", cell_size)
+    def summaryTable(self, column, subject):
+        table = subject.summaryData(column)
+        widths = [40 for _ in range(len(table[0]))]
+        cell_size = {"height": 6, "widths": widths}
+        self._createTable(table, "{} Summary".format(column), cell_size, header_size = 9)
+        
+    def agreementTable(self, subject):
+        table = subject.agreements
+        widths = [35 for _ in range(len(table.columns))]
+        widths[0] = 50
+        cell_size = {"height": 6, "widths": widths}
+        self._createTable(table, "Agreements", cell_size)
+        
+    def PTO_Table(self, subject):
+        table = subject.PTOs
+        widths = [30 for _ in range(len(table.columns))]
+        widths[0] = 65
+        cell_size = {"height": 6, "widths": widths}
+        self._createTable(table, "PTOs", cell_size)
     
     def output(self):
         super().output()
