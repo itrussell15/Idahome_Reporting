@@ -11,6 +11,7 @@ from ReportTemplate import Report
 import pandas as pd
 import numpy as np
 import logging
+import datetime
 
 class _SetterReport(Report):
     
@@ -25,6 +26,13 @@ class _SetterReport(Report):
         
         cell_size = {"height": 6, "widths": [35, 35, 35]}
         self._createTable(table, "KPIs", cell_size = cell_size)
+        
+    def header(self):
+        super().header()
+        self.cell(220, 10, "{} - {}".format(
+            (datetime.datetime.today() - datetime.timedelta(weeks = self._data.previous_weeks)).strftime("%m/%d/%Y"), datetime.date.today().strftime("%m/%d/%Y")), align = "C")
+        # Line break
+        self.ln(18)
     
 class SetterIndividualReport(_SetterReport):
     

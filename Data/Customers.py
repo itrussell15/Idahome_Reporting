@@ -167,6 +167,19 @@ class OfficeCloserData(OfficeData):
         super().__init__(data_obj)
         
     @property
+    def summaryTable(self):
+        collection = []
+        for i in self.closers:
+            closer = IndvCloserData(i, self)
+            temp = {"Closer": i, "Leads": closer.numLeads, "Pitched": closer.numPitched, "Signs": closer.numSigns,
+                    "Pitched %": closer.pitchRatio, "Pitched-Signed": closer.closeRatio, "Lead-Signed": closer.closeRatioTotal}
+            collection.append(temp)
+        df = pd.DataFrame.from_records(collection)
+        df.sort_values(by = "Leads", inplace = True, ascending = False)
+        return df
+        
+    
+    @property
     def customerTable(self):
         table = CustomerData.customerTable.fget(self)
         table = table[["Customer", "Source", "Status", "Closer"]]
@@ -182,10 +195,10 @@ class OfficeCloserData(OfficeData):
             closerData.name = closer
             everything = pd.concat([everything, closerData], axis = 1)
             
-        # try:
-        #     everything.drop("Enerflo Admin", axis = 0, inplace = True)
-        # except:
-        #     pass
+        try:
+            everything.drop("Enerflo Admin", axis = 0, inplace = True)
+        except:
+            pass
             
         everything = everything.transpose()
         everything.fillna(0.0, inplace = True)
@@ -301,10 +314,12 @@ if __name__ == "__main__":
     from DataHandler import DataHandler
     
     data = DataHandler(previous_weeks = 4)
-    closer = IndvCloserData("Darren Phillips", data.customers)
+    office = OfficeCloserData(data.customers)
+    print(office.summaryTable)
+    # closer = IndvCloserData("Darren Phillips", data.customers)
     # setter = IndvSetterData("Kyle Wagner", data.customers) 
     
     # print(setter.customerTable.head())
-    print(closer.data.head())
+    # print(closer.data.head())
     
         

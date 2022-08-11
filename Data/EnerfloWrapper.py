@@ -47,8 +47,6 @@ class EnerfloWrapper:
     
     def _getUnique(self, column):
         data = self._data[column].dropna()
-        
-        # data = data[column].unique()
         return data.unique()
     
     # Put get request with pages here
@@ -210,7 +208,9 @@ class Customers(EnerfloWrapper):
     
     @property
     def closers(self):
-        return self._getUnique("closer")
+        out = self._getUnique("closer")
+        out = out[out != "Enerflo Admin"]
+        return out
     
     @property
     def setters(self):
@@ -260,17 +260,18 @@ class Installs(EnerfloWrapper):
             obj = self.Install,
             previous_weeks = None)
         
-        self._data["current_milestone"].replace(to_replace = "Net Meter Meter Install", value = "PTO", inplace = True)
+        # self._data["current_milestone"].replace(to_replace = "Net Meter Meter Install", value = "PTO", inplace = True)
+        self._data.sort_values(by = "agreement", ascending = False, inplace = True)
     
-    def getUpcomingInstalls(self, weeks):
-        today = datetime.datetime.today()
-        out = self._data[self._data["install_date"].between(today, today + datetime.timedelta(weeks = weeks))]
-        if not out.empty:
-            logging.info("{} upcoming installs for the next {} weeks".format(len(out), weeks))
-            return out
-        else:
-            logging.info("No upcoming installs for the next {} weeks".format(weeks))
-            return None
+    # def getUpcomingInstalls(self, weeks):
+    #     today = datetime.datetime.today()
+    #     out = self._data[self._data["install_date"].between(today, today + datetime.timedelta(weeks = weeks))]
+    #     if not out.empty:
+    #         logging.info("{} upcoming installs for the next {} weeks".format(len(out), weeks))
+    #         return out
+    #     else:
+    #         logging.info("No upcoming installs for the next {} weeks".format(weeks))
+    #         return None
     
     class Install(EnerfloWrapper.Extraction):
         
@@ -289,11 +290,12 @@ class Installs(EnerfloWrapper):
             self.setter = self.setter if self.setter != self.closer else None
             
             self.panel_count = self.checkKey("panel_count")
-            self.system_cost = self.checkKey(["cost", "system_cost_base"])
+            self.gross_cost = self.checkKey(["cost", "system_cost_gross"])
             self.milestone = self.getMilestone("Net Meter Meter Install")
             self.agreement = self.getMilestone("Agreement")
             self.install_date = self.getMilestone("Install Scheduled", startDate = True)
-            self.current_milestone = self.getCurrentMilestone()
+            self.PTO = self.getPTO()
+            self.current_milestone = self.getCurrentMilestone() if not self.PTO else "PTO"
         
         def getMilestone(self, name, startDate = False):
             for milestone in self.checkKey("milestones"):
@@ -307,8 +309,19 @@ class Installs(EnerfloWrapper):
                     
         def getCurrentMilestone(self):
             return self.checkKey(["last_completed_milestone", "title"])
-            # 
+        
+        def getPTO(self):
+            custom_fields = self.checkKey("custom_fields")
+            if custom_fields:
+                for field in custom_fields:
+                    if field["name"] == "PTO":
+                        value = self.checkSubkey("fields", field)[-1]
+                        if self.checkSubkey("value", value):
+                            return datetime.datetime.strptime(value["value"]["value"], "%Y-%m-%d")
+                        else:
+                            return None
+        
 if __name__ == "__main__":
-    customers = Customers(previous_weeks = 6)
-    # installs = InstallData()
+    # customers = Customers(previous_weeks = 6)
+    installs = Installs()
     # data = installs.get()

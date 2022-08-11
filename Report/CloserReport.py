@@ -12,12 +12,12 @@ import pandas as pd
 import numpy as np
 import os
 import logging
+import datetime
 
 class _CloserReport(Report):
     
     def __init__(self, title, data_handler):
         super().__init__(title = title, report_type = "Closer", data_handler = data_handler)
-        self._data
         logging.info("Closer Report Creation initiated for {}".format(title))
     
     # Soon be deprecated
@@ -33,6 +33,13 @@ class _CloserReport(Report):
         table = subject.finalTable
         
         self._createTable(table, "Sources", cell_size, bold_rows = [len(table)])
+        
+    def header(self):
+        super().header()
+        self.cell(220, 10, "{} - {}".format(
+            (datetime.datetime.today() - datetime.timedelta(weeks = self._data.previous_weeks)).strftime("%m/%d/%Y"), datetime.date.today().strftime("%m/%d/%Y")), align = "C")
+        # Line break
+        self.ln(18)
 
 class IndividualReport(_CloserReport):
     
@@ -65,13 +72,22 @@ class OfficeReport(_CloserReport):
         self.create_body(office)
         
     def create_body(self, office):
+        self._SummaryTable(office)
+        self.ln(10)
         self._createSourceMatrix(office)
         self.ln(10)
-        self._LeadGenerationMatrix(office)
         self.add_page()
-        self._LeadStatusMatrix(office)
+        self._LeadGenerationMatrix(office)
         self.ln(10)
+        self._LeadStatusMatrix(office)
+        self.add_page()
         self._customerTable(office)
+        
+    def _SummaryTable(self, subject):
+        table = subject.summaryTable
+        widths = [45, 20, 20, 20, 28, 28, 28]
+        cell_size = {"height": 6, "widths": widths}
+        self._createTable(table, "Summary Table", cell_size, header_size = 8)
         
     def _LeadGenerationMatrix(self, subject):
         # Get data as single numbers and into strings
@@ -79,7 +95,7 @@ class OfficeReport(_CloserReport):
         widths = [16 for _ in range(len(table.columns))]
         widths[0] = 35
         cell_size = {"height": 6, "widths": widths}
-        self._createTable(table, "Lead Source by Rep", cell_size, header_size=6, bold_rows = [len(table)])
+        self._createTable(table, "Lead Source by Rep", cell_size, header_size = 6, bold_rows = [len(table)])
         
     def _LeadStatusMatrix(self, subject):
         # Get data as single numbers and into strings
@@ -100,6 +116,6 @@ class OfficeReport(_CloserReport):
         
 if __name__ == "__main__":
     
-    # report = IndividualReport("Darren Phillips")
-    report = OfficeReport()
+    report = IndividualReport("Darren Phillips")
+    # report = OfficeReport()
     report.output()

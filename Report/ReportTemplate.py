@@ -18,7 +18,7 @@ import numpy as np
 
 class Report(FPDF):
     
-    def __init__(self, title, report_type, data_handler, fig_path = "/assets/temp"):
+    def __init__(self, title, report_type, data_handler, fig_path = "/assets/temp",):
         super().__init__()
         self.WIDTH = 210
         self.HEIGHT = 297
@@ -53,10 +53,6 @@ class Report(FPDF):
         self.ln(8)
         # Date Range
         self.set_font(self._font, 'B', 15)
-        self.cell(220, 10, "{} - {}".format(
-            (datetime.datetime.today() - datetime.timedelta(weeks = 6)).strftime("%m/%d/%Y"), datetime.date.today().strftime("%m/%d/%Y")), align = "C")
-        # Line break
-        self.ln(18)
         
     def footer(self):
         thisTime = datetime.datetime.now()

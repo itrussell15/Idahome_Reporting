@@ -18,6 +18,7 @@ from enum import Enum
 from global_functions import resource_path
 
 import Customers
+import Installs
 
 
 # pd.set_option('display.max_rows', 500)
@@ -96,13 +97,16 @@ class DataHandler:
     def _collectInstalls(self):
         installs = EnerfloWrapper.Installs(
             perPageRequest = self.page_size)
-        return install
+        return installs
 
     @property
     def installs(self):
         if not self._installs:
             self._installs = self._collectInstalls()
-        return self._install
+        return self._installs
+    
+    def getInstalls(self):
+        return Installs.Installs(None, self.installs)
     
 class JOB_TYPE(Enum):
     CLOSER = 1,
