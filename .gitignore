@@ -10,6 +10,7 @@ Data/installs/
 
 #Files
 Data/Data.xlsx
+Data/install_data.json
 Idahome Data Draft.xlsx
 .DS_Store
 
