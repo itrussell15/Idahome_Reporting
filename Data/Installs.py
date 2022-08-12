@@ -8,16 +8,28 @@ Created on Tue Aug  9 22:29:28 2022
 
 import datetime
 import pandas as pd
+import matplotlib.pyplot as plt
 
 class Installs:
     
     def __init__(self, name, data_obj):
         self.name = name
-        self._data = data_obj.data
+        print(type(data_obj))
+        if type(data_obj) != type(pd.DataFrame):
+            # Importing DataFrame 
+            self._data = data_obj
+        else:
+            # Normal use case
+            self._data = data_obj.data
         
         self._filterData()
+        
+    def importDataFrame(self):
+        # TODO Convert datetimes from strings to be able to use  
+        pass
     
     def _filterData(self):
+        self._original = self._data
         self._data = self._data[~self._data["status"].isin(["Cancelled", "On Hold"])]
         self._data = self._data[(self._data["agreement"] >= self.start_date) | (self._data["PTO"] >= self.start_date)]
         self._data.rename(columns = {"agreement": "Agreement"}, inplace = True)
@@ -48,6 +60,23 @@ class Installs:
         table["Agreement Date"] = table["Agreement Date"].apply(self._presentableDate)
         return table
     
+    def performance(self, column):
+        monthly = self.monthlys(column)
+        plt.bar(monthly.index, monthly.total)
+        plt.scatter(monthly.index, monthly.kWs, linestyle = "--")
+        
+    
+    def monthlys(self, column):
+        getMonth = lambda x: "{}-{}".format(x.month, x.year)
+        group = self.original.groupby(pd.Grouper(key = column, freq = "M"))
+        df = pd.DataFrame()
+        df["total"] = group.count()["customer"]
+        df["kWs"] = group.sum()["system_size"]
+        df["cost"] = group.sum()["gross_cost"]
+        df["month"] = df.index.map(getMonth)
+        df.set_index("month", inplace = True)
+        return df
+    
     @property
     def agreements(self):
         table = self.getInstalls("Agreement")
@@ -64,6 +93,10 @@ class Installs:
     @property
     def data(self):
         return self._data
+    
+    @property
+    def original(self):
+        return self._original
     
     @property
     def start_date(self):
@@ -85,11 +118,13 @@ class Installs:
         return None
     
 if __name__ == "__main__":
-    from DataHandler import DataHandler
-    
-    data = DataHandler(previous_weeks = 6)
-    
-    installs = Installs("Test", data.installs)
-    # print(installs.data.head())
-    print(installs.PTOs)
+    # from DataHandler import DataHandler
+    # data = DataHandler(previous_weeks = 6)
+    import json
+    with open("install_data.json", "r") as f:
+        data = json.load(f)
+    data = pd.DataFrame.from_dict(data)
+    installs = Installs("Test", data)
+    # # print(installs.data.head())
+    # print(installs.performance("PTO"))
         

@@ -262,7 +262,17 @@ class Installs(EnerfloWrapper):
         
         # self._data["current_milestone"].replace(to_replace = "Net Meter Meter Install", value = "PTO", inplace = True)
         self._data.sort_values(by = "agreement", ascending = False, inplace = True)
-    
+        
+    def export(self):
+        out = self._data
+        for i in out.columns:
+            if out[i].dtype not in [float, int, str]:
+                out[i] = out[i].astype(str)
+        print(out)
+        import json
+        with open("install_data.json", "w") as f:
+            json.dump(out.to_dict(), f, indent = 2)
+        
     # def getUpcomingInstalls(self, weeks):
     #     today = datetime.datetime.today()
     #     out = self._data[self._data["install_date"].between(today, today + datetime.timedelta(weeks = weeks))]
@@ -324,4 +334,5 @@ class Installs(EnerfloWrapper):
 if __name__ == "__main__":
     # customers = Customers(previous_weeks = 6)
     installs = Installs()
+    installs.export()   
     # data = installs.get()
