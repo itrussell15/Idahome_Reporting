@@ -5,7 +5,11 @@ Created on Sat Jun 11 18:56:46 2022
 @author: Schmuck
 """
 
-import sys
+import sys, os
+
+sys.path.append(os.getcwd() + "/Data")
+sys.path.append(os.getcwd() + "/Report")
+
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -16,6 +20,8 @@ import InstallReport
 from DataHandler import DataHandler
 import logging, traceback
 import datetime
+
+
 
 
 data = DataHandler(previous_weeks = 6)

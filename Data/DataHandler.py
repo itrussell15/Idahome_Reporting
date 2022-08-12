@@ -47,7 +47,7 @@ class DataHandler:
         logging.info("Program Started @ {}".format(datetime.datetime.now()))
         
         self._customers = False
-        self._installs = False
+        self._installs = pd.DataFrame()
     
     def setupLogging(self):
         log_format = '%(levelname)s--%(filename)s-line %(lineno)s: %(message)s'
@@ -101,12 +101,15 @@ class DataHandler:
 
     @property
     def installs(self):
-        if not self._installs:
+        if self._installs.empty:
             self._installs = self._collectInstalls()
         return self._installs
     
     def getInstalls(self):
         return Installs.Installs(None, self.installs)
+    
+    def attachInstalls(self, data):
+        self._installs = data
     
 class JOB_TYPE(Enum):
     CLOSER = 1,

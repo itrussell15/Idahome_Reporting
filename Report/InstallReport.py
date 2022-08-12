@@ -6,6 +6,7 @@ Created on Wed Aug 10 17:55:15 2022
 @author: isaactrussell
 """
 
+import os
 from ReportTemplate import Report
 import datetime
 import logging
@@ -29,13 +30,19 @@ class InstallReport(Report):
         self.ln(18)
         
     def create_body(self, subject):
-        self.summaryTable("PTO", subject)
-        self.ln(10)
-        self.summaryTable("Agreement", subject)
-        self.ln(10)
-        self.PTO_Table(subject)
-        self.ln(10)
-        self.agreementTable(subject)
+        self.performance("PTO", subject)
+        # self.summaryTable("PTO", subject)
+        # self.ln(10)
+        # self.summaryTable("Agreement", subject)
+        # self.ln(10)
+        # self.add_page()
+        # self.PTO_Table(subject)
+        # self.ln(10)
+        # self.agreementTable(subject)
+    
+    def performance(self, column, subject):
+        subject.performance(column)
+        self.image(os.path.dirname(os.getcwd()) + "/assets/temp/performance.png", x = self.WIDTH/4, w = self.WIDTH * 0.8, h = 100)
     
     def summaryTable(self, column, subject):
         table = subject.summaryData(column)
@@ -69,8 +76,18 @@ class OfficeReport(InstallReport):
         self.create_body(installs)
         
 if __name__ == "__main__":
+    from DataHandler import DataHandler
+    import pandas as pd
+    data = DataHandler(previous_weeks = 1)
     
-    report = OfficeReport()
+    import json
+    with open("../Data/install_data.json", "r") as f:
+        installs = json.load(f)
+    df = pd.DataFrame.from_dict(installs)
+
+    data.attachInstalls(df)
+    
+    report = OfficeReport(data)
     report.output()
-    
+    # 
     
