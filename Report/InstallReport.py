@@ -12,8 +12,8 @@ import logging
 
 class InstallReport(Report):
     
-    def __init__(self, name, data_obj = None):
-        super().__init__("Idahome Solar", report_type = "Install", data_handler = data_obj)
+    def __init__(self, name, handler = None):
+        super().__init__("Idahome Solar", report_type = "Install", data_handler = handler)
     
     @property
     def start_date(self):
@@ -63,8 +63,8 @@ class InstallReport(Report):
         
 class OfficeReport(InstallReport):
     
-    def __init__(self, data_obj = None):
-        super().__init__("Idahome Solar", data_obj = data_obj)
+    def __init__(self, handler = None):
+        super().__init__("Idahome Solar", handler = handler)
         installs = self._data.getInstalls()
         self.create_body(installs)
         

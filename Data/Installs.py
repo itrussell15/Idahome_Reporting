@@ -22,7 +22,8 @@ class Installs:
         self._data = self._data[(self._data["agreement"] >= self.start_date) | (self._data["PTO"] >= self.start_date)]
         self._data.rename(columns = {"agreement": "Agreement"}, inplace = True)
         # self._data["PTO"] = self._data["PTO"].apply(lambda x: x.date())
-        
+    
+    # TODO Create automatic payout column that will scale based on the number of PTOs and number of agreements and multiply by the number of kWs
     def summaryData(self, column):
         df = self._data[self._data[column] >= self.start_date]
         headers = ["Deals", "kWs", "Cost"]

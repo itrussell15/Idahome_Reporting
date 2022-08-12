@@ -11,6 +11,8 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 from CloserReport import IndividualReport, OfficeReport
 from SetterReport import SetterIndividualReport, SetterOfficeReport
+import InstallReport
+
 from DataHandler import DataHandler
 import logging, traceback
 import datetime
@@ -45,6 +47,13 @@ except:
 try:
     report = SetterOfficeReport(handler = data)
     report.output()
-    print("Setter Office Report Generated")
+    print("Setter Office Report Generated\n")
 except:
     logging.warning("Unable to create setter office report. Please see the exception:\n{}".format(i, traceback.format_exc()))
+    
+try:
+    report = InstallReport.OfficeReport(handler = data)
+    report.output()
+    print("Office Install Report Generated")
+except:
+    logging.warning("Unable to create office install report. Please see the exception:\n{}".format(i, traceback.format_exc()))
