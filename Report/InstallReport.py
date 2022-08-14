@@ -10,6 +10,7 @@ import os
 from ReportTemplate import Report
 import datetime
 import logging
+import time
 
 class InstallReport(Report):
     
@@ -30,30 +31,43 @@ class InstallReport(Report):
         self.ln(18)
         
     def create_body(self, subject):
+        self.summaryTable("Agreement", subject)
+        self.ln(10)
+        self.agreementTable(subject)
+        self.add_page()
+        self.summaryTable("PTO", subject)
+        self.ln(10)
+        self.PTO_Table(subject)
+        self.add_page()
+        
+        self.performance("Agreement", subject)
+        self.ln(1)
         self.performance("PTO", subject)
-        # self.summaryTable("PTO", subject)
-        # self.ln(10)
-        # self.summaryTable("Agreement", subject)
-        # self.ln(10)
-        # self.add_page()
-        # self.PTO_Table(subject)
-        # self.ln(10)
-        # self.agreementTable(subject)
+        self.ln(10)
+        
     
     def performance(self, column, subject):
         subject.performance(column)
-        self.image(os.path.dirname(os.getcwd()) + "/assets/temp/performance.png", x = self.WIDTH/4, w = self.WIDTH * 0.8, h = 100)
+        image_w = int(self.WIDTH * 0.8)
+        x = int((self.WIDTH - image_w)/2)
+        self.set_font(self._font, 'B', 15)
+        # self.cell(0, h = 10, txt = "{} Yearly Performance".format(column), align = 'C')
+        # self.ln(9)
+        self.image(os.path.dirname(os.getcwd()) + "/assets/temp/{}_performance.png".format(column), x = x, w = image_w, h = 100)
     
     def summaryTable(self, column, subject):
         table = subject.summaryData(column)
         widths = [40 for _ in range(len(table[0]))]
         cell_size = {"height": 6, "widths": widths}
         self._createTable(table, "{} Summary".format(column), cell_size, header_size = 9)
+        # self.ln(8)
+        # self.performance(column, subject)
+        
         
     def agreementTable(self, subject):
         table = subject.agreements
         widths = [35 for _ in range(len(table.columns))]
-        widths[0] = 50
+        widths[0] = 60
         cell_size = {"height": 6, "widths": widths}
         self._createTable(table, "Agreements", cell_size)
         
@@ -81,7 +95,8 @@ if __name__ == "__main__":
     data = DataHandler(previous_weeks = 1)
     
     import json
-    with open("../Data/install_data.json", "r") as f:
+    path = os.path.dirname(os.getcwd()) + "/Data/install_data.json"
+    with open(path, "r") as f:
         installs = json.load(f)
     df = pd.DataFrame.from_dict(installs)
 
@@ -89,5 +104,5 @@ if __name__ == "__main__":
     
     report = OfficeReport(data)
     report.output()
-    # 
+
     

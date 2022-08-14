@@ -40,8 +40,8 @@ class Installs:
         self._original = self._data
         self._data = self._data[~self._data["status"].isin(["Cancelled", "On Hold"])]
         self._data = self._data[(self._data["Agreement"] >= self.start_date) | (self._data["PTO"] >= self.start_date)]
-        # self._data["PTO"] = self._data["PTO"].apply(lambda x: x.date())
-    
+        self._data["install_date"] = self._data["install_date"].apply(self.strToDate)
+        
     # TODO Create automatic payout column that will scale based on the number of PTOs and number of agreements and multiply by the number of kWs
     def summaryData(self, column):
         df = self._data[self._data[column] >= self.start_date]
@@ -72,7 +72,9 @@ class Installs:
         fig, ax1 = plt.subplots()
         # plt.title(column)
         
-        ax1.bar(monthly.index, monthly.total, color = "#f26524")
+        bars = ax1.bar(monthly.index, monthly.total, color = "#f26524")
+        for bars in ax1.containers:
+            ax1.bar_label(bars)
         ax1.set_ylim(0, monthly.kWs.max() / 4)
         ax1.set_ylabel("Deals")
        
@@ -80,9 +82,10 @@ class Installs:
         ax2.set_ylim(-10, monthly.kWs.max() + 10)
         ax2.set_ylabel("kWs")
         ax2.plot(monthly.index, monthly.kWs, marker = "o", linestyle = "-", color = "#f26524")
-        path = os.path.dirname(os.getcwd()) + "/assets/temp/performance.png"
+        path = os.path.dirname(os.getcwd()) + "/assets/temp/{}_performance.png".format(column)
+        plt.title("{} YTD Performance".format(column))
         plt.savefig(path)
-        # plt.close("all")
+        plt.close("all")
         
     
     def monthlys(self, column):
@@ -97,6 +100,13 @@ class Installs:
         df["month"] = df.index.map(getMonth)
         df.set_index("month", inplace = True)
         return df
+    
+    @staticmethod
+    def strToDate(x):
+        try:
+            return datetime.datetime.strptime(x, "%Y-%m-%d") if x else None
+        except:
+            return None
     
     @property
     def agreements(self):
@@ -126,7 +136,7 @@ class Installs:
     
     @property
     def upcomingInstalls(self):
-        return None
+        return self._data[self._data["install_date"] > datetime.datetime.today()]
     
     @property
     def PTO_Table(self):
@@ -140,12 +150,12 @@ class Installs:
     
 if __name__ == "__main__":
     from DataHandler import DataHandler
-    # data = DataHandler(previous_weeks = 6)
-    import json
-    with open("install_data.json", "r") as f:
-        data = json.load(f)
-    data = pd.DataFrame.from_dict(data)
-    installs = Installs("Test", data)
+    data = DataHandler(previous_weeks = 6)
+    # import json
+    # with open("install_data.json", "r") as f:
+        # data = json.load(f)
+    # data = pd.DataFrame.from_dict(data)
+    installs = Installs("Test", data.installs)
     installs.performance("Agreement")
     # print(installs.performance("PTO"))
         

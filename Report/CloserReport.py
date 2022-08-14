@@ -116,6 +116,6 @@ class OfficeReport(_CloserReport):
         
 if __name__ == "__main__":
     
-    report = IndividualReport("Darren Phillips")
-    # report = OfficeReport()
+    # report = IndividualReport("Darren Phillips")
+    report = OfficeReport()
     report.output()

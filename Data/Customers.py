@@ -315,7 +315,6 @@ if __name__ == "__main__":
     
     data = DataHandler(previous_weeks = 4)
     office = OfficeCloserData(data.customers)
-    print(office.summaryTable)
     # closer = IndvCloserData("Darren Phillips", data.customers)
     # setter = IndvSetterData("Kyle Wagner", data.customers) 
     

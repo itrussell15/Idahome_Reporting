@@ -21,9 +21,6 @@ from DataHandler import DataHandler
 import logging, traceback
 import datetime
 
-
-
-
 data = DataHandler(previous_weeks = 6)
 
 for i in data.closers:

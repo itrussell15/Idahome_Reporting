@@ -268,7 +268,6 @@ class Installs(EnerfloWrapper):
         for i in out.columns:
             if out[i].dtype not in [float, int, str]:
                 out[i] = out[i].astype(str)
-        print(out)
         import json
         with open("install_data.json", "w") as f:
             json.dump(out.to_dict(), f, indent = 2)
@@ -303,9 +302,13 @@ class Installs(EnerfloWrapper):
             self.gross_cost = self.checkKey(["cost", "system_cost_gross"])
             self.milestone = self.getMilestone("Net Meter Meter Install")
             self.agreement = self.getMilestone("Agreement")
-            self.install_date = self.getMilestone("Install Scheduled", startDate = True)
-            self.PTO = self.getPTO()
+            self.install_date = self.getCustomField("Installation")
+            # print(self.install_date)
+            self.PTO = self.getCustomField("PTO")
             self.current_milestone = self.getCurrentMilestone() if not self.PTO else "PTO"
+            
+            # if self.customer == "Trisha Anderson":
+            #     print(self.install_date)
         
         def getMilestone(self, name, startDate = False):
             for milestone in self.checkKey("milestones"):
@@ -320,17 +323,22 @@ class Installs(EnerfloWrapper):
         def getCurrentMilestone(self):
             return self.checkKey(["last_completed_milestone", "title"])
         
-        def getPTO(self):
+        # TODO fix this for both PTO and scheduled date
+        def getCustomField(self, name):
             custom_fields = self.checkKey("custom_fields")
             if custom_fields:
                 for field in custom_fields:
-                    if field["name"] == "PTO":
+                    if field["name"] == name:
                         value = self.checkSubkey("fields", field)[-1]
-                        if self.checkSubkey("value", value):
-                            return datetime.datetime.strptime(value["value"]["value"], "%Y-%m-%d")
-                        else:
-                            return None
-        
+                        try:
+                            if self.checkSubkey("value", value):
+                                return datetime.datetime.strptime(value["value"]["value"], "%Y-%m-%d")
+    
+                            else:
+                                return None
+                        except:
+                            print(value)
+    
 if __name__ == "__main__":
     # customers = Customers(previous_weeks = 6)
     installs = Installs()
