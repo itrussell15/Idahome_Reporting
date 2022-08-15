@@ -72,16 +72,24 @@ class OfficeReport(_CloserReport):
         self.create_body(office)
         
     def create_body(self, office):
-        self._SummaryTable(office)
-        self.ln(10)
-        self._createSourceMatrix(office)
-        self.ln(10)
-        self.add_page()
-        self._LeadGenerationMatrix(office)
-        self.ln(10)
-        self._LeadStatusMatrix(office)
-        self.add_page()
-        self._customerTable(office)
+        self._UpcomingInstalls(office)
+        # self._SummaryTable(office)
+        # self.ln(10)
+        # self._createSourceMatrix(office)
+        # self.ln(10)
+        # self.add_page()
+        # self._LeadGenerationMatrix(office)
+        # self.ln(10)
+        # self._LeadStatusMatrix(office)
+        # self.add_page()
+        # self._customerTable(office)
+        
+    def _UpcomingInstalls(self, subject):
+        installs = self._data.installs
+        table = installs.upcomingInstalls
+        widths = [40, 40, 50]
+        cell_size = {"height": 6, "widths": widths}
+        self._createTable(table, "Upcoming Installs", cell_size)
         
     def _SummaryTable(self, subject):
         table = subject.summaryTable

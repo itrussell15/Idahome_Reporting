@@ -7,6 +7,7 @@ Created on Sat Jun 11 18:56:46 2022
 
 import sys, os
 
+sys.path.append(os.getcwd())
 sys.path.append(os.getcwd() + "/Data")
 sys.path.append(os.getcwd() + "/Report")
 

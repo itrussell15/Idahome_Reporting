@@ -302,13 +302,9 @@ class Installs(EnerfloWrapper):
             self.gross_cost = self.checkKey(["cost", "system_cost_gross"])
             self.milestone = self.getMilestone("Net Meter Meter Install")
             self.agreement = self.getMilestone("Agreement")
-            self.install_date = self.getCustomField("Installation")
-            # print(self.install_date)
-            self.PTO = self.getCustomField("PTO")
+            self.install_date = self.InstallDate()
+            self.PTO = self.PTO_Date()
             self.current_milestone = self.getCurrentMilestone() if not self.PTO else "PTO"
-            
-            # if self.customer == "Trisha Anderson":
-            #     print(self.install_date)
         
         def getMilestone(self, name, startDate = False):
             for milestone in self.checkKey("milestones"):
@@ -323,21 +319,40 @@ class Installs(EnerfloWrapper):
         def getCurrentMilestone(self):
             return self.checkKey(["last_completed_milestone", "title"])
         
+        def PTO_Date(self):
+            data = self._getCustomField(674)
+            value = self.checkSubkey("fields", data)[-1]
+            if self.checkSubkey("value", value):
+                return datetime.datetime.strptime(value["value"]["value"], "%Y-%m-%d")
+            else:
+                return None
+        
+        def InstallDate(self):
+            data = self._getCustomField(742)
+            for i in self.checkSubkey("fields", data):
+                if i["id"] == 738:
+                    date = self.checkSubkey(["value", "value"], i)
+                    return datetime.datetime.strptime(date, "%Y-%m-%d") if date else None
+                else:
+                    return None
+        
         # TODO fix this for both PTO and scheduled date
-        def getCustomField(self, name):
+        def _getCustomField(self, thisID):
             custom_fields = self.checkKey("custom_fields")
             if custom_fields:
                 for field in custom_fields:
-                    if field["name"] == name:
-                        value = self.checkSubkey("fields", field)[-1]
-                        try:
-                            if self.checkSubkey("value", value):
-                                return datetime.datetime.strptime(value["value"]["value"], "%Y-%m-%d")
+                    if field["id"] == thisID:
+                        return field
+                        # value = self.checkSubkey("fields", field)[-1]
+                        # print(value)
+                        # try:
+                        #     if self.checkSubkey("value", value):
+                        #         return datetime.datetime.strptime(value["value"]["value"], "%Y-%m-%d")
     
-                            else:
-                                return None
-                        except:
-                            print(value)
+                        #     else:
+                        #         return None
+                        # except:
+                        #     print(value)
     
 if __name__ == "__main__":
     # customers = Customers(previous_weeks = 6)

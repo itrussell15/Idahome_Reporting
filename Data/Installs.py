@@ -37,10 +37,13 @@ class Installs:
 
     
     def _filterData(self):
+        # self._data["install_date"] = self._data["install_date"].apply(self.strToDate)
+        self._data["install_date"] = self._data["install_date"].apply(self.strToDate)
+        
         self._original = self._data
         self._data = self._data[~self._data["status"].isin(["Cancelled", "On Hold"])]
         self._data = self._data[(self._data["Agreement"] >= self.start_date) | (self._data["PTO"] >= self.start_date)]
-        self._data["install_date"] = self._data["install_date"].apply(self.strToDate)
+        # self._data["install_date"] = self._data["install_date"].apply(self.strToDate)
         
     # TODO Create automatic payout column that will scale based on the number of PTOs and number of agreements and multiply by the number of kWs
     def summaryData(self, column):
@@ -104,7 +107,7 @@ class Installs:
     @staticmethod
     def strToDate(x):
         try:
-            return datetime.datetime.strptime(x, "%Y-%m-%d") if x else None
+            return datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S").date() if x else None
         except:
             return None
     
@@ -136,7 +139,12 @@ class Installs:
     
     @property
     def upcomingInstalls(self):
-        return self._data[self._data["install_date"] > datetime.datetime.today()]
+        data = self.original[self.original["install_date"] > datetime.date.today()]
+        pull_values = ["customer", "closer", "install_date"]
+        data = data[pull_values]
+        data["install_date"] = data["install_date"].apply(self._presentableDate)
+        data.columns = ["Customer", "Closer", "Scheduled Install Date"]
+        return data
     
     @property
     def PTO_Table(self):
@@ -151,11 +159,12 @@ class Installs:
 if __name__ == "__main__":
     from DataHandler import DataHandler
     data = DataHandler(previous_weeks = 6)
-    # import json
-    # with open("install_data.json", "r") as f:
-        # data = json.load(f)
-    # data = pd.DataFrame.from_dict(data)
-    installs = Installs("Test", data.installs)
-    installs.performance("Agreement")
+    import json
+    with open("install_data.json", "r") as f:
+        data = json.load(f)
+    data = pd.DataFrame.from_dict(data)
+    installs = Installs("Test", data)
+    print(installs.upcomingInstalls)
+    # installs.performance("Agreement")
     # print(installs.performance("PTO"))
         
