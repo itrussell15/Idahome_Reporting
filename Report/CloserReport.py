@@ -8,6 +8,8 @@ Created on Sat Jul  9 14:53:39 2022
 import sys
 
 from Report.ReportTemplate import Report
+from Installs import Installs
+
 import pandas as pd
 import numpy as np
 import os
@@ -73,19 +75,20 @@ class OfficeReport(_CloserReport):
         
     def create_body(self, office):
         self._UpcomingInstalls(office)
-        # self._SummaryTable(office)
-        # self.ln(10)
-        # self._createSourceMatrix(office)
-        # self.ln(10)
-        # self.add_page()
-        # self._LeadGenerationMatrix(office)
-        # self.ln(10)
-        # self._LeadStatusMatrix(office)
-        # self.add_page()
-        # self._customerTable(office)
+        self.ln(10)
+        self._SummaryTable(office)
+        self.add_page()
+        self._createSourceMatrix(office)
+        self.ln(10)
+        self.add_page()
+        self._LeadGenerationMatrix(office)
+        self.ln(10)
+        self._LeadStatusMatrix(office)
+        self.add_page()
+        self._customerTable(office)
         
     def _UpcomingInstalls(self, subject):
-        installs = self._data.installs
+        installs = Installs("Office", self._data)
         table = installs.upcomingInstalls
         widths = [40, 40, 50]
         cell_size = {"height": 6, "widths": widths}

@@ -9,16 +9,26 @@ Created on Thu Aug  4 22:03:48 2022
 import pandas as pd
 import datetime 
 import logging
+from ReportableData import BaseData
 
-class CustomerData:
+class CustomerData(BaseData):
     
     def __init__(self, name, data_obj):
+        super().__init__(data_obj)
         self.name = name
-        self._data = data_obj.data
         
-    @property
-    def data(self):
-        return self._data
+        self._data = self._importDates(self._data)
+        
+    def _importDataFrame(self, data):
+        return data    
+
+    def _importDates(self, data):
+                
+        # TODO Convert datetimes from strings to be able to use  
+        for i in ["created", "nextApptDate"]:
+            if data[i].dtype == object:
+                data[i] = pd.to_datetime(data[i], errors = "coerce")
+        return data    
 
     @property
     def numLeads(self):
@@ -97,11 +107,13 @@ class CustomerData:
     
     @property
     def customerTable(self):
+
         data = self.data[["name", "lead_source", "lead_status", "closer", "setter", "created", "nextApptDate"]].copy()
         
         data["lead_status"].fillna("No Dispo", inplace = True)
         data["lead_source"].fillna("No Source", inplace = True)
         data["name"].fillna("No Name", inplace = True)
+        # print(data.dtypes)
         data["created"] = data["created"].apply(self.formatDate)
         data["nextApptDate"] = data["nextApptDate"].apply(self.formatDatetime)
         data["nextApptDate"].fillna("-", inplace = True)
@@ -139,27 +151,27 @@ class CustomerData:
         except:
             raise ValueError("Non ZeroDivisionError occured")
     
-    @staticmethod    
-    def formatDate(x):
-        if x is not pd.NaT:
-            return x.strftime("%m-%d-%Y")
-        else:
-            return None
+    # @staticmethod    
+    # def formatDate(x):
+    #     if x is not pd.NaT:
+    #         return x.strftime("%m-%d-%Y")
+    #     else:
+    #         return None
     
-    @staticmethod
-    def formatDatetime(x):
-        if x is not pd.NaT:
-            return x.strftime("%m-%d-%Y %I%p")
-        else:
-            return None
+    # @staticmethod
+    # def formatDatetime(x):
+    #     if x is not pd.NaT:
+    #         return x.strftime("%m-%d-%Y %I%p")
+    #     else:
+    #         return None
         
 class OfficeData(CustomerData):
     
     def __init__(self, data_obj):
         super().__init__("Office", data_obj)
         
-        self.closers = data_obj.closers
-        self.setters = data_obj.setters
+        # self.closers = data_obj.closers
+        # self.setters = data_obj.setters
         
 class OfficeCloserData(OfficeData):
     
@@ -170,7 +182,7 @@ class OfficeCloserData(OfficeData):
     def summaryTable(self):
         collection = []
         for i in self.closers:
-            closer = IndvCloserData(i, self)
+            closer = IndvCloserData(i, self._data)
             temp = {"Closer": i, "Leads": closer.numLeads, "Pitched": closer.numPitched, "Signs": closer.numSigns,
                     "Pitched %": closer.pitchRatio, "Pitched-Signed": closer.closeRatio, "Lead-Signed": closer.closeRatioTotal}
             collection.append(temp)
@@ -279,7 +291,7 @@ class IndvCloserData(IndvData):
         
         self._customerTable = CustomerData.customerTable.fget(self)
         
-        if name in data_obj.closers:
+        if name in self.closers:
             self._data = self.maskIndvData(name, "closer")
         else:
             # Might not need to raise could be log
@@ -298,7 +310,7 @@ class IndvSetterData(IndvData):
         
         self._customerTable = CustomerData.customerTable.fget(self)
         
-        if name in data_obj.setters:
+        if name in self.setters:
             self._data = self.maskIndvData(name, "setter")
         else:
             raise ValueError("{} has no leads in this data".format(self.name))
@@ -314,11 +326,12 @@ if __name__ == "__main__":
     from DataHandler import DataHandler
     
     data = DataHandler(previous_weeks = 4)
-    office = OfficeCloserData(data.customers)
-    # closer = IndvCloserData("Darren Phillips", data.customers)
+    office = OfficeCloserData(data)
+    print(office.summaryTable)
+    # closer = IndvCloserData("Darren Phillips", data)
     # setter = IndvSetterData("Kyle Wagner", data.customers) 
     
-    # print(setter.customerTable.head())
+    # print(office.customerTable.head())
     # print(closer.data.head())
     
         

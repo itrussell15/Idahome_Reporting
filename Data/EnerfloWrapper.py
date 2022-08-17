@@ -5,7 +5,7 @@ Created on Wed Jul 13 22:45:21 2022
 @author: Schmuck
 """
 
-import sys
+import sys, os
 
 import requests, json
 import datetime
@@ -148,6 +148,18 @@ class EnerfloWrapper:
         else:
             logging.info("Gathering same data previously requested. Returning previous data")
             return self._data
+        
+    def export(self):
+        out = self._data
+        
+        for i in out.columns:
+            if out[i].dtype not in [float, int, str]:
+                out[i] = out[i].astype(str)
+        import json
+        
+        temp = os.makedirs(os.getcwd() + "/cache") if not os.path.exists(os.getcwd() + "/cache") else None
+        with open(os.getcwd() + "/cache/{}_data.json".format(self.__class__.__name__), "w") as f:
+            json.dump(out.to_dict(), f, indent = 2)
 
     class Extraction:
         def __init__(self, data):
@@ -184,6 +196,8 @@ class EnerfloWrapper:
         @staticmethod
         def strToDate(x):
             return datetime.datetime.strptime(x, "%Y-%m-%d") if x else None
+        
+
 
 class Customers(EnerfloWrapper):
         
@@ -201,20 +215,6 @@ class Customers(EnerfloWrapper):
                 url = self._endpoints["GET"]["all_customers"],
                 obj = self.Lead,
                 previous_weeks = weeks)
-        
-    @property
-    def data(self):
-        return self._data
-    
-    @property
-    def closers(self):
-        out = self._getUnique("closer")
-        out = out[out != "Enerflo Admin"]
-        return out
-    
-    @property
-    def setters(self):
-        return self._getUnique("setter")
                 
     class Lead(EnerfloWrapper.Extraction):
         
@@ -241,7 +241,7 @@ class Customers(EnerfloWrapper):
             
             apptNum = list(leadData["futureAppointments"].keys())[0] if self.checkKey("futureAppointments") else None
             
-            date = self.checkKey(["futureAppointments", str(apptNum), "start_time_local"])
+            date = self.checkKey(["fu˜tureAppointments", str(apptNum), "start_time_local"])
             self.nextApptDate = datetime.datetime.fromisoformat(date) if date else None
             self.nextApptDetail = self.checkKey(["futureAppointments", str(apptNum), "name"])            
 
@@ -250,7 +250,6 @@ class Installs(EnerfloWrapper):
         super().__init__(perPageRequest = perPageRequest, previous_weeks = None)
         self.collect()
         self.setters = self._getUnique("setter")
-        self.closers = self._getUnique("closer")
         
     def collect(self):
         print("Gathering Install Data")
@@ -262,15 +261,7 @@ class Installs(EnerfloWrapper):
         
         # self._data["current_milestone"].replace(to_replace = "Net Meter Meter Install", value = "PTO", inplace = True)
         self._data.sort_values(by = "agreement", ascending = False, inplace = True)
-        
-    def export(self):
-        out = self._data
-        for i in out.columns:
-            if out[i].dtype not in [float, int, str]:
-                out[i] = out[i].astype(str)
-        import json
-        with open("install_data.json", "w") as f:
-            json.dump(out.to_dict(), f, indent = 2)
+        self.export()
         
     # def getUpcomingInstalls(self, weeks):
     #     today = datetime.datetime.today()
@@ -306,6 +297,9 @@ class Installs(EnerfloWrapper):
             self.PTO = self.PTO_Date()
             self.current_milestone = self.getCurrentMilestone() if not self.PTO else "PTO"
         
+            # if self.customer == "Trisha Anderson":
+            #     self.install_date = self.InstallDate()
+        
         def getMilestone(self, name, startDate = False):
             for milestone in self.checkKey("milestones"):
                 if name == self.checkSubkey("title", milestone):
@@ -329,12 +323,22 @@ class Installs(EnerfloWrapper):
         
         def InstallDate(self):
             data = self._getCustomField(742)
+            # print(data.keys())
             for i in self.checkSubkey("fields", data):
-                if i["id"] == 738:
+                if i["key"] == "scheduled_install_date":
                     date = self.checkSubkey(["value", "value"], i)
-                    return datetime.datetime.strptime(date, "%Y-%m-%d") if date else None
-                else:
-                    return None
+                    if date:
+                        return datetime.datetime.strptime(date, "%Y-%m-%d")
+            return None
+                
+            # for i in self.checkSubkey("fields", data):
+            #     print(i)
+            #     if i["id"] == 738:
+            #         date = self.checkSubkey(["value", "value"], i)
+            #         # print(date)
+            #         return datetime.datetime.strptime(date, "%Y-%m-%d") if date else None
+            #     else:
+            #         return None
         
         # TODO fix this for both PTO and scheduled date
         def _getCustomField(self, thisID):

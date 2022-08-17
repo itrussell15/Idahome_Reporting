@@ -20,7 +20,6 @@ from global_functions import resource_path
 import Customers
 import Installs
 
-
 # pd.set_option('display.max_rows', 500)
 # pd.set_option('display.max_columns', 100)
 # pd.set_option('display.width', 300)
@@ -59,14 +58,6 @@ class DataHandler:
             filemode = "w"
             )
         logging.getLogger(__name__)
-        
-    @property
-    def closers(self):
-        return self.customers.closers
-    
-    @property
-    def setters(self):
-        return self.customers.setters
 
 # %% Data Grabs
 
@@ -84,15 +75,15 @@ class DataHandler:
     
     def getCloser(self, name = None):
         if name:
-            return Customers.IndvCloserData(name, self.customers)
+            return Customers.IndvCloserData(name, self)
         else:
-            return Customers.OfficeCloserData(self.customers)
+            return Customers.OfficeCloserData(self)
     
     def getSetter(self, name = None):
         if name:
-            return Customers.IndvSetterData(name, self.customers)
+            return Customers.IndvSetterData(name, self)
         else:
-            return Customers.OfficeSetterData(self.customers)
+            return Customers.OfficeSetterData(self)
     
     def _collectInstalls(self):
         installs = EnerfloWrapper.Installs(
@@ -106,7 +97,7 @@ class DataHandler:
         return self._installs
     
     def getInstalls(self):
-        return Installs.Installs(None, self.installs)
+        return Installs.Installs(None, self)
     
     def attachInstalls(self, data):
         self._installs = data

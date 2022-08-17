@@ -10,24 +10,24 @@ import os
 import datetime
 import pandas as pd
 import matplotlib.pyplot as plt
+import json
+import logging
 
-class Installs:
+import DataHandler
+from ReportableData import BaseData
+
+class Installs(BaseData):
     
     def __init__(self, name, data_obj):
-        plt.ion()
+        super().__init__(data_obj)
         self.name = name
-        if type(data_obj) == type(pd.DataFrame()):
-            # Importing DataFrame 
-            self._data = self.importDataFrame(data_obj)
-        else:
-            # Normal use case
-            self._data = data_obj.data
         
+        self._data = self._importDates(self._data)
         self._data.rename(columns = {"agreement": "Agreement"}, inplace = True)
         self._filterData()
         # self.performance()
-        
-    def importDataFrame(self, data):
+
+    def _importDates(self, data):
                 
         # TODO Convert datetimes from strings to be able to use  
         for i in ["created", "milestone", "agreement", "PTO"]:
@@ -124,9 +124,9 @@ class Installs:
         table["PTO"] = table["PTO"].apply(self._presentableDate)
         return table
     
-    @property
-    def data(self):
-        return self._data
+    # @property
+    # def data(self):
+    #     return self._data
     
     @property
     def original(self):
@@ -159,12 +159,16 @@ class Installs:
 if __name__ == "__main__":
     from DataHandler import DataHandler
     data = DataHandler(previous_weeks = 6)
-    import json
-    with open("install_data.json", "r") as f:
-        data = json.load(f)
-    data = pd.DataFrame.from_dict(data)
+    # # import json
+    # with open("install_data.json", "r") as f:
+    #     data = json.load(f)
+    # data = pd.DataFrame.from_dict(data)
+    # data = os.getcwd() + "/install_data.json"
+    
+    
     installs = Installs("Test", data)
-    print(installs.upcomingInstalls)
+    
+    # print(installs.upcomingInstalls)
     # installs.performance("Agreement")
     # print(installs.performance("PTO"))
         

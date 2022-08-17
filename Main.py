@@ -11,6 +11,11 @@ sys.path.append(os.getcwd())
 sys.path.append(os.getcwd() + "/Data")
 sys.path.append(os.getcwd() + "/Report")
 
+
+# pd.set_option('display.max_rows', 500)
+# pd.set_option('display.max_columns', 500)
+# pd.set_option('display.width', 1000)
+
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
