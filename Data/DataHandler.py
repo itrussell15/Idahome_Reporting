@@ -46,7 +46,7 @@ class DataHandler:
         logging.info("Program Started @ {}".format(datetime.datetime.now()))
         
         self._customers = False
-        self._installs = pd.DataFrame()
+        self._installs = False
     
     def setupLogging(self):
         log_format = '%(levelname)s--%(filename)s-line %(lineno)s: %(message)s'
@@ -92,7 +92,7 @@ class DataHandler:
 
     @property
     def installs(self):
-        if self._installs.empty:
+        if not self._installs:
             self._installs = self._collectInstalls()
         return self._installs
     
@@ -101,6 +101,15 @@ class DataHandler:
     
     def attachInstalls(self, data):
         self._installs = data
+    
+    @property
+    def closers(self):
+        return Customers.OfficeCloserData(self).closers
+    
+    @property
+    def setters(self):
+        return Customers.OfficeCloserData(self).setters
+    
     
 class JOB_TYPE(Enum):
     CLOSER = 1,
@@ -116,8 +125,8 @@ class JOB_TYPE(Enum):
 if __name__ ==  "__main__":
     data = DataHandler(previous_weeks = 1)
     # setter = data.getSetter("Kyle Wagner")
-    closer = data.getCloser("Darren Phillips")
-    print(closer)
+    # closer = data.getCloser("Darren Phillips")
+    # print(closer)
     # office = data.getOffice(JOB_TYPE.SETTER)
     
-    
+    installs = data.getInstalls()

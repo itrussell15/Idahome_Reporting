@@ -59,7 +59,6 @@ class BaseData:
     def _importDataFrame(self, data):
                 
         # TODO Convert datetimes from strings to be able to use 
-        print(data.head())
         for i in ["created", "milestone", "agreement", "PTO"]:
             if data[i].dtype == object:
                 data[i] = pd.to_datetime(data[i], errors = "coerce")

@@ -22,15 +22,14 @@ class Installs(BaseData):
         super().__init__(data_obj)
         self.name = name
         
-        self._data = self._importDates(self._data)
         self._data.rename(columns = {"agreement": "Agreement"}, inplace = True)
+        self._data = self._importDates(self._data)
         self._filterData()
         # self.performance()
 
     def _importDates(self, data):
-                
         # TODO Convert datetimes from strings to be able to use  
-        for i in ["created", "milestone", "agreement", "PTO"]:
+        for i in ["created", "milestone", "Agreement", "PTO"]:
             if data[i].dtype == object:
                 data[i] = pd.to_datetime(data[i], errors = "coerce")
         return data
@@ -85,7 +84,7 @@ class Installs(BaseData):
         ax2.set_ylim(-10, monthly.kWs.max() + 10)
         ax2.set_ylabel("kWs")
         ax2.plot(monthly.index, monthly.kWs, marker = "o", linestyle = "-", color = "#f26524")
-        path = os.path.dirname(os.getcwd()) + "/assets/temp/{}_performance.png".format(column)
+        path = os.getcwd() + "/assets/temp/{}_performance.png".format(column)
         plt.title("{} YTD Performance".format(column))
         plt.savefig(path)
         plt.close("all")
@@ -159,11 +158,11 @@ class Installs(BaseData):
 if __name__ == "__main__":
     from DataHandler import DataHandler
     data = DataHandler(previous_weeks = 6)
-    # # import json
+    # import json
     # with open("install_data.json", "r") as f:
     #     data = json.load(f)
     # data = pd.DataFrame.from_dict(data)
-    # data = os.getcwd() + "/install_data.json"
+    # data = os.getcwd() + "/cache/Installs_data.json"
     
     
     installs = Installs("Test", data)

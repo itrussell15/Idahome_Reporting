@@ -53,7 +53,7 @@ class InstallReport(Report):
         self.set_font(self._font, 'B', 15)
         # self.cell(0, h = 10, txt = "{} Yearly Performance".format(column), align = 'C')
         # self.ln(9)
-        self.image(os.path.dirname(os.getcwd()) + "/assets/temp/{}_performance.png".format(column), x = x, w = image_w, h = 100)
+        self.image(os.getcwd() + "/assets/temp/{}_performance.png".format(column), x = x, w = image_w, h = 100)
     
     def summaryTable(self, column, subject):
         table = subject.summaryData(column)
@@ -94,13 +94,13 @@ if __name__ == "__main__":
     import pandas as pd
     data = DataHandler(previous_weeks = 1)
     
-    import json
-    path = os.path.dirname(os.getcwd()) + "/Data/install_data.json"
-    with open(path, "r") as f:
-        installs = json.load(f)
-    df = pd.DataFrame.from_dict(installs)
+    # import json
+    # path = os.path.dirname(os.getcwd()) + "/Data/install_data.json"
+    # with open(path, "r") as f:
+    #     installs = json.load(f)
+    # df = pd.DataFrame.from_dict(installs)
 
-    data.attachInstalls(df)
+    # data.attachInstalls(df)
     
     report = OfficeReport(data)
     report.output()
