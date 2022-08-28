@@ -18,8 +18,13 @@ import numpy as np
 
 class Report(FPDF):
     
-    def __init__(self, title, report_type, data_handler, fig_path = "/assets/temp",):
+    def __init__(self, title, report_type, data_handler, fig_path = "/assets/temp"):
         super().__init__()
+        
+        # print(os.path.dirname(os.getcwd()))
+        # self.add_font('Arial', "", fname = resource_path(os.getcwd() + "/assets/arial.ttf"))
+        # self.set_doc_option("core_fonts_encoding", "windows-1252")
+        
         self.WIDTH = 210
         self.HEIGHT = 297
         self._report_type = report_type
@@ -114,7 +119,10 @@ class Report(FPDF):
             # Cells in row
             for o, (value, width) in enumerate(zip(row, cell_size["widths"])):
                 top = self.y
-                self.cell(width, cell_size["height"], value, border = 1, align = "C")
+                # import time
+                # time.sleep(0.1)
+                # print(value)
+                self.cell(width, cell_size["height"], str(value).encode('utf-8').decode('latin-1'), border = 1, align = "C")
                 self.x = sum([i for i in cell_size["widths"][:o + 1]]) + to_center
                 self.y = top
 

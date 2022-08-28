@@ -11,7 +11,6 @@ sys.path.append(os.getcwd())
 sys.path.append(os.getcwd() + "/Data")
 sys.path.append(os.getcwd() + "/Report")
 
-
 # pd.set_option('display.max_rows', 500)
 # pd.set_option('display.max_columns', 500)
 # pd.set_option('display.width', 200)
@@ -35,7 +34,7 @@ try:
     print("Closer Office Report Generated")
 except:
         logging.warning("Unable to create closer office report. Please see the exception:\n{}".format(traceback.format_exc()))
-    
+
 try:
     report = SetterOfficeReport(handler = data)
     report.output()
@@ -59,9 +58,9 @@ for i in data.setters:
     except:
         logging.warning("Unable to create report for {} Please see the exception:\n{}".format(i, traceback.format_exc()))
     
-# try:
-report = InstallReport.OfficeReport(handler = data)
-report.output()
-print("Office Install Report Generated")
-# except:
-    # logging.warning("Unable to create office install report. Please see the exception:\n{}".format(i, traceback.format_exc()))
+try:
+    report = InstallReport.OfficeReport(handler = data)
+    report.output()
+    print("Office Install Report Generated")
+except:
+    logging.warning("Unable to create office install report. Please see the exception:\n{}".format(i, traceback.format_exc()))
