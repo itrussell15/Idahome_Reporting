@@ -5,6 +5,10 @@ Created on Sat Jul  9 14:48:06 2022
 @author: Schmuck
 """
 
+
+
+''' ###### DEPRECATED --> See Customers.py #####'''
+
 import pandas as pd
 from ReportableData import CustomerData
 

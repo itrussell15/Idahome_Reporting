@@ -188,6 +188,9 @@ class OfficeCloserData(OfficeData):
             collection.append(temp)
         df = pd.DataFrame.from_records(collection)
         df.sort_values(by = "Leads", inplace = True, ascending = False)
+        # print(self._data)
+        df.loc[len(df.index)] = ["Total", self.numLeads, self.numPitched, self.numSigns,self.pitchRatio, self.closeRatio, self.closeRatioTotal ]
+        
         return df
         
     
@@ -324,8 +327,10 @@ class IndvSetterData(IndvData):
         
 if __name__ == "__main__":
     from DataHandler import DataHandler
+
+    # data = DataHandler(previous_weeks = 4)
+    data = pd.read_json("cache/Customers_data.json")
     
-    data = DataHandler(previous_weeks = 4)
     office = OfficeCloserData(data)
     print(office.summaryTable)
     # closer = IndvCloserData("Darren Phillips", data)

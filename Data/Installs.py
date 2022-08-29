@@ -47,7 +47,7 @@ class Installs(BaseData):
     # TODO Create automatic payout column that will scale based on the number of PTOs and number of agreements and multiply by the number of kWs
     def summaryData(self, column):
         df = self._data[self._data[column] >= self.start_date]
-        headers = ["Deals", "kWs", "Cost"]
+        headers = ["Deals", "kWs", "Revenue"]
         values = [str(len(df)), "{:.2f} kWs".format(df["system_size"].sum()), self._moneyFormat(df["gross_cost"].sum())]
         return [headers, values]
     
@@ -81,12 +81,17 @@ class Installs(BaseData):
         ax1.set_ylabel("Deals")
        
         ax2 = plt.twinx()
-        ax2.set_ylim(-10, monthly.kWs.max() + 10)
+        ax2.set_ylim(0, monthly.kWs.max() + 10)
         ax2.set_ylabel("kWs")
+        
         ax2.plot(monthly.index, monthly.kWs, marker = "o", linestyle = "-", color = "#f26524")
         path = os.getcwd() + "/assets/temp/{}_performance.png".format(column)
+        
         plt.title("{} YTD Performance".format(column))
-        plt.savefig(path)
+        try:
+            plt.savefig(path)
+        except:
+            plt.savefig("/Users/isaactrussell/IDrive-Sync/Projects/Idahome/assets/temp/{}_performance.png".format(column))
         plt.close("all")
         
     
@@ -98,7 +103,7 @@ class Installs(BaseData):
         df = pd.DataFrame()
         df["total"] = group.count()["customer"]
         df["kWs"] = group.sum()["system_size"]
-        df["cost"] = group.sum()["gross_cost"]
+        df["revenue"] = group.sum()["gross_cost"]
         df["month"] = df.index.map(getMonth)
         df.set_index("month", inplace = True)
         return df
@@ -163,9 +168,12 @@ if __name__ == "__main__":
     #     data = json.load(f)
     # data = pd.DataFrame.from_dict(data)
     # data = os.getcwd() + "/cache/Installs_data.json"
+    data = pd.read_json("cache/Installs_data.json")
     
     
     installs = Installs("Test", data)
+    installs.performance("Agreement")
+        
     
     # print(installs.upcomingInstalls)
     # installs.performance("Agreement")

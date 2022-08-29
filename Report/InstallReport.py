@@ -53,7 +53,10 @@ class InstallReport(Report):
         self.set_font(self._font, 'B', 15)
         # self.cell(0, h = 10, txt = "{} Yearly Performance".format(column), align = 'C')
         # self.ln(9)
-        self.image(os.getcwd() + "/assets/temp/{}_performance.png".format(column), x = x, w = image_w, h = 100)
+        try:
+            self.image(os.getcwd() + "/assets/temp/{}_performance.png".format(column), x = x, w = image_w, h = 100)
+        except:
+            self.image("/Users/isaactrussell/IDrive-Sync/Projects/Idahome/assets/temp/{}_performance.png".format(column), x = x, w = image_w, h = 100)
     
     def summaryTable(self, column, subject):
         table = subject.summaryData(column)

@@ -98,7 +98,7 @@ class OfficeReport(_CloserReport):
         table = subject.summaryTable
         widths = [45, 20, 20, 20, 28, 28, 28]
         cell_size = {"height": 6, "widths": widths}
-        self._createTable(table, "Summary Table", cell_size, header_size = 8)
+        self._createTable(table, "Summary Table", cell_size, header_size = 8, bold_rows = [len(table)])
         
     def _LeadGenerationMatrix(self, subject):
         # Get data as single numbers and into strings
