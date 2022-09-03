@@ -9,6 +9,7 @@ import sys
 
 from Report.ReportTemplate import Report
 from Installs import Installs
+from DataHandler import DataHandler
 
 import pandas as pd
 import numpy as np
@@ -127,6 +128,8 @@ class OfficeReport(_CloserReport):
         
 if __name__ == "__main__":
     
+    data = DataHandler(cached = True)
+    
     # report = IndividualReport("Darren Phillips")
-    report = OfficeReport()
+    report = OfficeReport(handler = data)
     report.output()

@@ -357,9 +357,20 @@ class Installs(EnerfloWrapper):
                         #         return None
                         # except:
                         #     print(value)
+                        
+class VirtualEnerfloWrapper(EnerfloWrapper):
+    
+    def __init__(self, file):
+        super().__init__(previous_weeks = 0)
+        self._data = pd.read_json(str(os.path.join(os.getcwd(), "cache", file)))
+        
+            
     
 if __name__ == "__main__":
+    
+    
+    customers = VirtualEnerfloWrapper("Customers_data.json")
     # customers = Customers(previous_weeks = 6)
-    installs = Installs()
-    installs.export()   
+    # installs = Installs()
+    # installs.export()   
     # data = installs.get()

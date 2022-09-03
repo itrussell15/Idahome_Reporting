@@ -38,15 +38,20 @@ import EnerfloWrapper
 
 class DataHandler:
 
-    def __init__(self, previous_weeks = 6, page_size = 200):
+    def __init__(self, previous_weeks = 6, page_size = 200, cached = False):
         self.previous_weeks = previous_weeks
         self.page_size = page_size
         
         self.setupLogging()
         logging.info("Program Started @ {}".format(datetime.datetime.now()))
         
-        self._customers = False
-        self._installs = False
+        if not cached:
+            self._customers = False
+            self._installs = False
+        else:
+            self._customers = EnerfloWrapper.VirtualEnerfloWrapper("Customers_data.json")
+            self._installs = EnerfloWrapper.VirtualEnerfloWrapper("Installs_data.json")
+            
     
     def setupLogging(self):
         log_format = '%(levelname)s--%(filename)s-line %(lineno)s: %(message)s'
@@ -123,7 +128,7 @@ class JOB_TYPE(Enum):
 
 # %% Main
 if __name__ ==  "__main__":
-    data = DataHandler(previous_weeks = 1)
+    data = DataHandler(previous_weeks = 1, cached = True)
     # setter = data.getSetter("Kyle Wagner")
     # closer = data.getCloser("Darren Phillips")
     # print(closer)

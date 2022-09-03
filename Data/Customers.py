@@ -227,7 +227,7 @@ class OfficeCloserData(OfficeData):
         
         everything.loc["Totals"] = everything.copy().sum().values
         everything = everything.astype(int)
-        
+        print(everything)
         everything.drop(0, inplace = True)
         everything.reset_index(inplace = True)
         everything = everything.rename(columns = {'index':'Closer',
@@ -283,7 +283,8 @@ class IndvData(CustomerData):
     
     @property
     def customerTable(self):
-        table = CustomerData.customerTable.fget(self)
+        table = self._customerTable.copy()
+        table = self._customerTable[self._customerTable.index.isin(self._data.index)]
         table = table[["Customer", "Source", "Status"]]
         return table
     
@@ -300,11 +301,11 @@ class IndvCloserData(IndvData):
             # Might not need to raise could be log
             raise ValueError("{} has no leads in this data".format(self.name))
             
-    @property
-    def customerTable(self):
-        table = self._customerTable.copy()
-        table = table[["Customer", "Source", "Status"]]
-        return table
+    # @property
+    # def customerTable(self):
+    #     table = self._customerTable.copy()
+    #     table = table[["Customer", "Source", "Status"]]
+    #     return table
         
 class IndvSetterData(IndvData):
     
@@ -331,12 +332,8 @@ if __name__ == "__main__":
     # data = DataHandler(previous_weeks = 4)
     data = pd.read_json("cache/Customers_data.json")
     
-    office = OfficeCloserData(data)
-    print(office.summaryTable)
-    # closer = IndvCloserData("Darren Phillips", data)
-    # setter = IndvSetterData("Kyle Wagner", data.customers) 
+    closer = IndvCloserData("Darren Phillips", data)
+    setter = IndvSetterData("Kyle Wagner", data) 
     
-    # print(office.customerTable.head())
-    # print(closer.data.head())
-    
+
         
